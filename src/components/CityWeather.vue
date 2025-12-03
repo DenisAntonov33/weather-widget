@@ -93,9 +93,13 @@ watch(() => props.cityName, () => {
 <style scoped lang="scss">
 .city-weather {
   margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 
   &:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
   }
 
   .loading,
@@ -166,7 +170,6 @@ watch(() => props.cityName, () => {
       grid-template-columns: 1fr 1fr;
       gap: 12px 20px;
       padding-top: 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
 
       .details-column {
         display: flex;
