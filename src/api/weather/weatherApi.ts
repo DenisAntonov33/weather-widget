@@ -73,3 +73,42 @@ export async function fetchWeather(city: string = 'London'): Promise<WeatherData
         throw new Error('Failed to fetch weather data');
     }
 }
+
+export async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
+    try {
+        const response = await fetch(
+            `${API_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+        );
+
+        if (!response.ok) {
+            throw new Error('Weather data not available');
+        }
+
+        const data: WeatherApiResponse = await response.json();
+
+        const windDegrees = data.wind.deg || 0;
+        const windDirection = getWindDirection(windDegrees);
+        const windDescription = getWindDescription(data.wind.speed);
+        const dewPoint = calculateDewPoint(data.main.temp, data.main.humidity);
+
+        return {
+            location: data.name,
+            country: data.sys.country,
+            temperature: Math.round(data.main.temp),
+            feelsLike: Math.round(data.main.feels_like),
+            condition: data.weather[0].main,
+            description: data.weather[0].description,
+            windSpeed: Math.round(data.wind.speed * 10) / 10,
+            windDirection: windDirection,
+            windDegrees: windDegrees,
+            windDescription: windDescription,
+            pressure: data.main.pressure,
+            humidity: data.main.humidity,
+            dewPoint: dewPoint,
+            visibility: Math.round((data.visibility || 10000) / 1000 * 10) / 10,
+            icon: data.weather[0].icon
+        };
+    } catch (error) {
+        throw new Error('Failed to fetch weather data');
+    }
+}

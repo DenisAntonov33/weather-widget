@@ -49,7 +49,7 @@ const DEFAULT_CITIES: City[] = [
   { id: '2', name: 'Moscow', country: 'RU' }
 ];
 
-const loadCities = () => {
+const loadCities = async () => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
@@ -62,9 +62,65 @@ const loadCities = () => {
       console.warn('Failed to parse stored cities, using defaults');
     }
   }
-  // Use default cities if no stored data or parsing failed
-  cities.value = [...DEFAULT_CITIES];
-  saveCities(); // Save defaults on first visit
+  // If no stored cities, try to get user's location first
+  await requestUserLocation();
+  
+  // If no user location was added, use default cities
+  if (cities.value.length === 0) {
+    cities.value = [...DEFAULT_CITIES];
+    saveCities(); // Save defaults on first visit
+  }
+};
+
+const requestUserLocation = async () => {
+  if (!navigator.geolocation) {
+    console.warn('Geolocation is not supported by this browser');
+    return;
+  }
+
+  return new Promise<void>((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { fetchWeatherByCoords } = await import('./api/weather/weatherApi');
+          const weather = await fetchWeatherByCoords(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          
+          // Add user's location as the first city
+          const userCity: City = {
+            id: 'user-location',
+            name: weather.location,
+            country: weather.country
+          };
+          
+          // Check if city already exists
+          const exists = cities.value.some(
+            c => c.name.toLowerCase() === userCity.name.toLowerCase()
+          );
+          
+          if (!exists) {
+            cities.value.unshift(userCity); // Add at the beginning
+            saveCities();
+          }
+        } catch (error) {
+          console.warn('Failed to fetch weather for user location:', error);
+        } finally {
+          resolve();
+        }
+      },
+      (error) => {
+        // User denied permission or geolocation failed
+        console.warn('Geolocation error:', error.message);
+        resolve();
+      },
+      {
+        timeout: 10000,
+        enableHighAccuracy: false
+      }
+    );
+  });
 };
 
 const saveCities = () => {
