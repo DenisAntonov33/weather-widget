@@ -2,7 +2,9 @@
   <div class="settings-panel">
     <div class="settings-header">
       <h2 class="settings-title">Settings</h2>
-      <button class="close-button" @click="$emit('close')">←</button>
+      <button class="close-button" @click="$emit('close')">
+        <ArrowLeftIcon class="icon" />
+      </button>
     </div>
     
     <div class="cities-list">
@@ -16,7 +18,7 @@
         @drop="handleDrop(index, $event)"
         @dragend="handleDragEnd"
       >
-        <span class="drag-handle">☰</span>
+        <Bars3Icon class="drag-handle" />
         <span class="city-name">{{ city.country ? `${city.name}, ${city.country}` : city.name }}</span>
         <button 
           class="delete-button" 
@@ -25,7 +27,7 @@
           :disabled="cities.length === 1"
           :title="cities.length === 1 ? 'Cannot delete the last city' : 'Delete'"
         >
-          ×
+          <XMarkIcon class="icon" />
         </button>
       </div>
     </div>
@@ -41,7 +43,7 @@
           @keyup.enter="addCity"
         />
         <button class="add-button" @click="addCity" title="Add">
-          ↶
+          <PlusIcon class="icon" />
         </button>
       </div>
     </div>
@@ -50,6 +52,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 interface City {
   id: string;
@@ -158,14 +161,18 @@ const handleDragEnd = () => {
       border: none;
       background: rgba(255, 255, 255, 0.2);
       color: white;
-      font-size: 22px;
-      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s ease;
-      line-height: 1;
+
+      .icon {
+        width: 18px;
+        height: 18px;
+        color: white;
+        stroke-width: 2.5;
+      }
 
       &:hover {
         background: rgba(255, 255, 255, 0.3);
@@ -198,7 +205,9 @@ const handleDragEnd = () => {
       }
 
       .drag-handle {
-        font-size: 18px;
+        width: 14px;
+        height: 14px;
+        color: white;
         opacity: 0.7;
         cursor: grab;
         user-select: none;
@@ -215,20 +224,20 @@ const handleDragEnd = () => {
       }
 
       .delete-button {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         border: none;
         background: transparent;
         cursor: pointer;
-        font-size: 20px;
-        font-weight: 300;
-        color: white;
         opacity: 0.7;
         transition: opacity 0.2s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        line-height: 1;
+
+        .icon {
+          color: white;
+        }
 
         &:hover:not(.disabled) {
           opacity: 1;
@@ -286,13 +295,18 @@ const handleDragEnd = () => {
         border: none;
         background: rgba(255, 255, 255, 0.2);
         color: white;
-        font-size: 20px;
         border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background-color 0.2s ease;
+
+        .icon {
+          width: 20px;
+          height: 20px;
+          color: white;
+        }
 
         &:hover {
           background: rgba(255, 255, 255, 0.3);

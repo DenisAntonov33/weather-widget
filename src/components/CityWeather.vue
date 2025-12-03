@@ -24,7 +24,7 @@
       <div class="details-grid">
         <div class="details-column">
           <div class="detail-item">
-            <span class="wind-icon" :style="{ transform: `rotate(${weather.windDegrees}deg)` }">→</span>
+            <ArrowRightIcon class="wind-icon" :style="{ transform: `rotate(${weather.windDegrees}deg)` }" />
             <span class="value">{{ weather.windSpeed }}m/s {{ weather.windDirection }}</span>
           </div>
           <div class="detail-item">
@@ -38,7 +38,7 @@
         </div>
         <div class="details-column">
           <div class="detail-item">
-            <span class="pressure-icon">⌖</span>
+            <MapPinIcon class="pressure-icon" />
             <span class="value">{{ weather.pressure }}hPa</span>
           </div>
           <div class="detail-item">
@@ -53,6 +53,7 @@
 
 <script setup lang="ts">
 import {ref, onMounted, watch} from 'vue';
+import {ArrowRightIcon, MapPinIcon} from '@heroicons/vue/24/outline';
 import {WeatherData} from '../api/weather/types';
 import {fetchWeather} from '../api/weather/weatherApi';
 
@@ -181,15 +182,17 @@ watch(() => props.cityName, () => {
         font-size: 13px;
 
         .wind-icon {
-          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          color: white;
           opacity: 0.9;
-          display: inline-block;
-          transform: rotate(135deg);
           transform-origin: center;
         }
 
         .pressure-icon {
-          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          color: white;
           opacity: 0.9;
         }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="weather-widget">
     <button v-if="!showSettings" class="settings-button" @click="toggleSettings">
-      ⚙
+      <Cog6ToothIcon class="icon" />
     </button>
     
     <div ref="contentWrapper" class="content-wrapper">
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue';
+import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import CityWeather from './components/CityWeather.vue';
 import Settings from './components/Settings.vue';
 
@@ -235,8 +236,6 @@ onMounted(() => {
     border: none;
     background: rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 18px;
-    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -244,6 +243,12 @@ onMounted(() => {
     transition: background-color 0.2s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 10;
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      color: white;
+    }
 
     &:hover {
       background: rgba(255, 255, 255, 0.3);
