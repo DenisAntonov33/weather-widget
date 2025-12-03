@@ -25,7 +25,7 @@
           :disabled="cities.length === 1"
           :title="cities.length === 1 ? 'Cannot delete the last city' : 'Delete'"
         >
-          🗑
+          ×
         </button>
       </div>
     </div>
@@ -219,12 +219,15 @@ const handleDragEnd = () => {
         border: none;
         background: transparent;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 20px;
+        font-weight: 300;
+        color: white;
         opacity: 0.7;
         transition: opacity 0.2s ease;
         display: flex;
         align-items: center;
         justify-content: center;
+        line-height: 1;
 
         &:hover:not(.disabled) {
           opacity: 1;
