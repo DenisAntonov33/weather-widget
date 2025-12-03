@@ -18,7 +18,13 @@
       >
         <span class="drag-handle">☰</span>
         <span class="city-name">{{ city.country ? `${city.name}, ${city.country}` : city.name }}</span>
-        <button class="delete-button" @click="removeCity(index)" title="Delete">
+        <button 
+          class="delete-button" 
+          :class="{ disabled: cities.length === 1 }"
+          @click="removeCity(index)" 
+          :disabled="cities.length === 1"
+          :title="cities.length === 1 ? 'Cannot delete the last city' : 'Delete'"
+        >
           🗑
         </button>
       </div>
@@ -74,6 +80,10 @@ const addCity = () => {
 };
 
 const removeCity = (index: number) => {
+  // Prevent deleting the last city
+  if (props.cities.length <= 1) {
+    return;
+  }
   emit('removeCity', index);
 };
 
@@ -216,8 +226,17 @@ const handleDragEnd = () => {
         align-items: center;
         justify-content: center;
 
-        &:hover {
+        &:hover:not(.disabled) {
           opacity: 1;
+        }
+
+        &.disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+
+        &:disabled {
+          cursor: not-allowed;
         }
       }
     }

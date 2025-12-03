@@ -191,6 +191,10 @@ const handleAddCity = async (cityName: string) => {
 };
 
 const handleRemoveCity = (index: number) => {
+  // Prevent deleting the last city
+  if (cities.value.length <= 1) {
+    return;
+  }
   cities.value.splice(index, 1);
   saveCities();
 };
@@ -258,6 +262,7 @@ onMounted(() => {
   .weather-view {
     display: flex;
     flex-direction: column;
+    min-height: 300px;
   }
 }
 </style>
