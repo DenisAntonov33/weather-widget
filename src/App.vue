@@ -37,29 +37,42 @@ interface City {
 }
 
 const showSettings = ref(false);
-const cities = ref<City[]>([
-  { id: '1', name: 'London', country: 'UK' },
-  { id: '2', name: 'Moscow', country: 'RU' }
-]);
+const cities = ref<City[]>([]);
 
 const contentWrapper = ref<HTMLElement | null>(null);
 const weatherViewRef = ref<HTMLElement | null>(null);
 
 const STORAGE_KEY = 'weather-widget-cities';
 
+const DEFAULT_CITIES: City[] = [
+  { id: '1', name: 'London', country: 'UK' },
+  { id: '2', name: 'Moscow', country: 'RU' }
+];
+
 const loadCities = () => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      cities.value = JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cities.value = parsed;
+        return;
+      }
     } catch (e) {
-      // Use default cities if parsing fails
+      console.warn('Failed to parse stored cities, using defaults');
     }
   }
+  // Use default cities if no stored data or parsing failed
+  cities.value = [...DEFAULT_CITIES];
+  saveCities(); // Save defaults on first visit
 };
 
 const saveCities = () => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cities.value));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cities.value));
+  } catch (e) {
+    console.error('Failed to save cities to localStorage:', e);
+  }
 };
 
 const updateWrapperHeight = () => {
@@ -97,12 +110,24 @@ watch(cities, () => {
   updateWrapperHeight();
 }, { deep: true });
 
-const handleAddCity = (cityName: string) => {
+const handleAddCity = async (cityName: string) => {
   const trimmedName = cityName.trim();
   if (trimmedName && !cities.value.some(c => c.name.toLowerCase() === trimmedName.toLowerCase())) {
+    // Try to fetch country code from API
+    let country: string | undefined;
+    try {
+      const { fetchWeather } = await import('./api/weather/weatherApi');
+      const weather = await fetchWeather(trimmedName);
+      country = weather.country;
+    } catch (e) {
+      // If API call fails, add city without country
+      console.warn('Could not fetch country for city:', trimmedName);
+    }
+    
     const newCity: City = {
       id: Date.now().toString(),
-      name: trimmedName
+      name: trimmedName,
+      country: country
     };
     cities.value.push(newCity);
     saveCities();
