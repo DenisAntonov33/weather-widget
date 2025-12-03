@@ -2,7 +2,7 @@
   <div class="settings-panel">
     <div class="settings-header">
       <h2 class="settings-title">Settings</h2>
-      <button class="close-button" @click="$emit('close')">X</button>
+      <button class="close-button" @click="$emit('close')">←</button>
     </div>
     
     <div class="cities-list">
@@ -158,13 +158,14 @@ const handleDragEnd = () => {
       border: none;
       background: rgba(255, 255, 255, 0.2);
       color: white;
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 22px;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s ease;
+      line-height: 1;
 
       &:hover {
         background: rgba(255, 255, 255, 0.3);
