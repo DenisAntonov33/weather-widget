@@ -8,7 +8,11 @@ export interface CitySearchResult {
     lon: number;
 }
 
-const API_KEY = 'ed341caa54a850b39807080283b1e9fb'; // Replace with your OpenWeatherMap API key
+const API_KEY = process.env.OPENWEATHER_API_KEY;
+
+if (!API_KEY) {
+    console.warn('OPENWEATHER_API_KEY is not set. Please create a .env file with your OpenWeatherMap API key.');
+}
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 const GEOCODING_URL = 'https://api.openweathermap.org/geo/1.0/direct';
 const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
@@ -78,6 +82,7 @@ function transformWeatherData(data: WeatherApiResponse): WeatherData {
 
 export async function fetchWeather(city: string = 'London'): Promise<WeatherData> {
     try {
+        console.log('qwe: ', API_KEY);
         const response = await fetch(
             `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`
         );

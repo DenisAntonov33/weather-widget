@@ -1,6 +1,11 @@
 const path = require('path');
 const { VueLoaderPlugin } = require('vue-loader');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
+
+// Load .env file manually to ensure variables are available for DefinePlugin
+// dotenv-webpack will handle it during compilation, but we need it here too
+// require('dotenv').config({ path: '.env' });
 
 module.exports = (env, argv) => {
     const isProduction = argv.mode === 'production';
@@ -68,7 +73,13 @@ module.exports = (env, argv) => {
                     removeComments: true,
                     collapseWhitespace: true
                 } : false
-            })
+            }),
+            new Dotenv({
+                path: '.env',
+                safe: true,
+                systemvars: true,
+                defaults: false
+            }),
         ],
         externals: {
             // Uncomment if you want Vue to be external
