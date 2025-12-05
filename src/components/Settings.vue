@@ -12,6 +12,10 @@
         v-for="(city, index) in props.cities"
         :key="city.id"
         class="city-item"
+        :class="{ 
+          'drag-over': dragOverIndex === index,
+          'dragging': draggedIndex === index
+        }"
         :draggable="true"
         @dragstart="handleDragStart(index, $event)"
         @dragover.prevent="handleDragOver(index, $event)"
@@ -68,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import { searchCities } from '../api/weather/weatherApi';
 import { CitySearchResult } from '../api/weather/types';
@@ -94,8 +98,10 @@ const newCityName = ref('');
 const citySuggestions = ref<CitySearchResult[]>([]);
 const showSuggestions = ref(false);
 const selectedIndex = ref(-1);
+const draggedIndex = ref<number | null>(null);
+const dragOverIndex = ref<number | null>(null);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-let draggedIndex: number | null = null;
+let blurTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const handleSearch = async () => {
   if (searchTimeout) {
@@ -117,7 +123,10 @@ const handleSearch = async () => {
 
 const handleBlur = () => {
   // Delay to allow click on suggestion
-  setTimeout(() => {
+  if (blurTimeout) {
+    clearTimeout(blurTimeout);
+  }
+  blurTimeout = setTimeout(() => {
     showSuggestions.value = false;
   }, 200);
 };
@@ -169,14 +178,10 @@ const removeCity = (index: number) => {
 };
 
 const handleDragStart = (index: number, event: DragEvent) => {
-  draggedIndex = index;
+  draggedIndex.value = index;
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/html', '');
-  }
-  const target = event.currentTarget as HTMLElement;
-  if (target) {
-    target.style.opacity = '0.5';
   }
 };
 
@@ -184,37 +189,32 @@ const handleDragOver = (index: number, event: DragEvent) => {
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = 'move';
   }
-  if (draggedIndex !== null && draggedIndex !== index) {
-    const items = document.querySelectorAll('.city-item');
-    items.forEach((item, i) => {
-      if (i === index) {
-        item.classList.add('drag-over');
-      } else {
-        item.classList.remove('drag-over');
-      }
-    });
+  if (draggedIndex.value !== null && draggedIndex.value !== index) {
+    dragOverIndex.value = index;
   }
 };
 
 const handleDrop = (index: number, event: DragEvent) => {
   event.preventDefault();
-  if (draggedIndex !== null && draggedIndex !== index) {
-    emit('reorderCities', draggedIndex, index);
+  if (draggedIndex.value !== null && draggedIndex.value !== index) {
+    emit('reorderCities', draggedIndex.value, index);
   }
-  document.querySelectorAll('.city-item').forEach(item => {
-    item.classList.remove('drag-over');
-  });
+  dragOverIndex.value = null;
 };
 
 const handleDragEnd = () => {
-  document.querySelectorAll('.city-item').forEach(item => {
-    if (item instanceof HTMLElement) {
-      item.style.opacity = '1';
-    }
-    item.classList.remove('drag-over');
-  });
-  draggedIndex = null;
+  draggedIndex.value = null;
+  dragOverIndex.value = null;
 };
+
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  if (blurTimeout) {
+    clearTimeout(blurTimeout);
+  }
+});
 </script>
 
 <style scoped lang="scss">
@@ -290,6 +290,10 @@ const handleDragEnd = () => {
 
       &.drag-over {
         border-top: 2px solid rgba(255, 255, 255, 0.5);
+      }
+
+      &.dragging {
+        opacity: 0.5;
       }
 
       .drag-handle {

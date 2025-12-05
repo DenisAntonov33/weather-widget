@@ -4,7 +4,10 @@
       <Cog6ToothIcon class="icon" />
     </button>
     
-    <div ref="contentWrapper" class="content-wrapper">
+    <div 
+      ref="contentWrapper" 
+      class="content-wrapper"
+    >
       <Settings
         v-show="showSettings"
         :cities="cities"
@@ -26,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import CityWeather from './components/CityWeather.vue';
 import Settings from './components/Settings.vue';
@@ -132,40 +135,9 @@ const saveCities = () => {
   }
 };
 
-const updateWrapperHeight = () => {
-  nextTick(() => {
-    if (!contentWrapper.value) return;
-    
-    let targetHeight = 0;
-    
-    if (showSettings.value) {
-      // Find the settings panel element
-      const settingsEl = contentWrapper.value.querySelector('.settings-panel') as HTMLElement;
-      if (settingsEl) {
-        targetHeight = settingsEl.scrollHeight;
-      }
-    } else {
-      // Use weather view height
-      const weatherEl = weatherViewRef.value;
-      if (weatherEl) {
-        targetHeight = weatherEl.scrollHeight;
-      }
-    }
-    
-    if (targetHeight > 0) {
-      contentWrapper.value.style.minHeight = `${targetHeight}px`;
-    }
-  });
-};
-
 const toggleSettings = () => {
   showSettings.value = !showSettings.value;
-  updateWrapperHeight();
 };
-
-watch(cities, () => {
-  updateWrapperHeight();
-}, { deep: true });
 
 const handleAddCity = async (cityName: string) => {
   const trimmedName = cityName.trim();
@@ -208,7 +180,6 @@ const handleReorderCities = (fromIndex: number, toIndex: number) => {
 
 onMounted(() => {
   loadCities();
-  updateWrapperHeight();
 });
 
 </script>
@@ -262,7 +233,6 @@ onMounted(() => {
 
   .content-wrapper {
     position: relative;
-    transition: min-height 0.2s ease;
   }
 
   .weather-view {
