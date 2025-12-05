@@ -1,6 +1,6 @@
 <template>
   <div class="city-weather">
-    <div v-if="loading" class="loading">Loading weather...</div>
+    <CityWeatherSkeleton v-if="loading" />
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="weather" class="weather-content">
       <div class="location">{{ weather.location }}, {{ weather.country }}</div>
@@ -56,6 +56,7 @@ import {ref, onMounted, watch} from 'vue';
 import {ArrowRightIcon, MapPinIcon} from '@heroicons/vue/24/outline';
 import {WeatherData} from '../api/weather/types';
 import {fetchWeather} from '../api/weather/weatherApi';
+import CityWeatherSkeleton from './CityWeatherSkeleton.vue';
 
 const props = defineProps<{
   cityName: string;
@@ -102,14 +103,10 @@ watch(() => props.cityName, () => {
     border-bottom: none;
   }
 
-  .loading,
   .error {
     text-align: center;
     padding: 20px;
     font-size: 16px;
-  }
-
-  .error {
     color: #ffebee;
     background: rgba(244, 67, 54, 0.2);
     border-radius: 8px;
