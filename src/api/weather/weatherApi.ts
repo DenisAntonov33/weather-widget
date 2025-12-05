@@ -3,11 +3,13 @@ import { WeatherData, WeatherApiResponse } from './types';
 const API_KEY = 'ed341caa54a850b39807080283b1e9fb'; // Replace with your OpenWeatherMap API key
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 const GEOCODING_URL = 'https://api.openweathermap.org/geo/1.0/direct';
+const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
 // Convert wind direction in degrees to compass direction
 function getWindDirection(deg: number): string {
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    const index = Math.round(deg / 22.5) % 16;
+    const FULL_CIRCLE_DEGREES = 360;
+    const degInCircle = FULL_CIRCLE_DEGREES / directions.length;
+    const index = Math.round(deg / degInCircle) % directions.length;
     return directions[index];
 }
 
