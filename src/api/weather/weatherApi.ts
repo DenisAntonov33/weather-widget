@@ -1,5 +1,13 @@
 import { WeatherData, WeatherApiResponse } from './types';
 
+export interface CitySearchResult {
+    name: string;
+    country: string;
+    state?: string;
+    lat: number;
+    lon: number;
+}
+
 const API_KEY = 'ed341caa54a850b39807080283b1e9fb'; // Replace with your OpenWeatherMap API key
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
 const GEOCODING_URL = 'https://api.openweathermap.org/geo/1.0/direct';
@@ -42,6 +50,32 @@ function calculateDewPoint(temp: number, humidity: number): number {
     return Math.round(dewPoint);
 }
 
+// Transform API response to WeatherData format
+function transformWeatherData(data: WeatherApiResponse): WeatherData {
+    const windDegrees = data.wind.deg || 0;
+    const windDirection = getWindDirection(windDegrees);
+    const windDescription = getWindDescription(data.wind.speed);
+    const dewPoint = calculateDewPoint(data.main.temp, data.main.humidity);
+
+    return {
+        location: data.name,
+        country: data.sys.country,
+        temperature: Math.round(data.main.temp),
+        feelsLike: Math.round(data.main.feels_like),
+        condition: data.weather[0].main,
+        description: data.weather[0].description,
+        windSpeed: Math.round(data.wind.speed * 10) / 10,
+        windDirection: windDirection,
+        windDegrees: windDegrees,
+        windDescription: windDescription,
+        pressure: data.main.pressure,
+        humidity: data.main.humidity,
+        dewPoint: dewPoint,
+        visibility: Math.round((data.visibility || 10000) / 1000 * 10) / 10,
+        icon: data.weather[0].icon
+    };
+}
+
 export async function fetchWeather(city: string = 'London'): Promise<WeatherData> {
     try {
         const response = await fetch(
@@ -53,29 +87,7 @@ export async function fetchWeather(city: string = 'London'): Promise<WeatherData
         }
 
         const data: WeatherApiResponse = await response.json();
-
-        const windDegrees = data.wind.deg || 0;
-        const windDirection = getWindDirection(windDegrees);
-        const windDescription = getWindDescription(data.wind.speed);
-        const dewPoint = calculateDewPoint(data.main.temp, data.main.humidity);
-
-        return {
-            location: data.name,
-            country: data.sys.country,
-            temperature: Math.round(data.main.temp),
-            feelsLike: Math.round(data.main.feels_like),
-            condition: data.weather[0].main,
-            description: data.weather[0].description,
-            windSpeed: Math.round(data.wind.speed * 10) / 10,
-            windDirection: windDirection,
-            windDegrees: windDegrees,
-            windDescription: windDescription,
-            pressure: data.main.pressure,
-            humidity: data.main.humidity,
-            dewPoint: dewPoint,
-            visibility: Math.round((data.visibility || 10000) / 1000 * 10) / 10,
-            icon: data.weather[0].icon
-        };
+        return transformWeatherData(data);
     } catch (error) {
         throw new Error('Failed to fetch weather data');
     }
@@ -92,40 +104,10 @@ export async function fetchWeatherByCoords(lat: number, lon: number): Promise<We
         }
 
         const data: WeatherApiResponse = await response.json();
-
-        const windDegrees = data.wind.deg || 0;
-        const windDirection = getWindDirection(windDegrees);
-        const windDescription = getWindDescription(data.wind.speed);
-        const dewPoint = calculateDewPoint(data.main.temp, data.main.humidity);
-
-        return {
-            location: data.name,
-            country: data.sys.country,
-            temperature: Math.round(data.main.temp),
-            feelsLike: Math.round(data.main.feels_like),
-            condition: data.weather[0].main,
-            description: data.weather[0].description,
-            windSpeed: Math.round(data.wind.speed * 10) / 10,
-            windDirection: windDirection,
-            windDegrees: windDegrees,
-            windDescription: windDescription,
-            pressure: data.main.pressure,
-            humidity: data.main.humidity,
-            dewPoint: dewPoint,
-            visibility: Math.round((data.visibility || 10000) / 1000 * 10) / 10,
-            icon: data.weather[0].icon
-        };
+        return transformWeatherData(data);
     } catch (error) {
         throw new Error('Failed to fetch weather data');
     }
-}
-
-export interface CitySearchResult {
-    name: string;
-    country: string;
-    state?: string;
-    lat: number;
-    lon: number;
 }
 
 export async function searchCities(query: string, limit: number = 3): Promise<CitySearchResult[]> {
