@@ -30,12 +30,16 @@ function getWindDescription(speed: number): string {
     return 'Hurricane';
 }
 
-// Calculate dew point
+// Calculate dew point.
+// Source: https://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
 function calculateDewPoint(temp: number, humidity: number): number {
-    const a = 17.27;
-    const b = 237.7;
-    const alpha = ((a * temp) / (b + temp)) + Math.log(humidity / 100.0);
-    return Math.round((b * alpha) / (a - alpha));
+    const MAGNUS_COEFFICIENT_B = 17.625;
+    const MAGNUS_COEFFICIENT_C = 243.04; // degrees Celsius
+
+    const gamma = Math.log(humidity / 100.0) + (MAGNUS_COEFFICIENT_B * temp) / (MAGNUS_COEFFICIENT_C + temp);
+    const dewPoint = (MAGNUS_COEFFICIENT_C * gamma) / (MAGNUS_COEFFICIENT_B - gamma);
+
+    return Math.round(dewPoint);
 }
 
 export async function fetchWeather(city: string = 'London'): Promise<WeatherData> {
