@@ -223,6 +223,7 @@ const handleDragEnd = () => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    position: relative;
 
     .settings-title {
       font-size: 18px;
@@ -232,8 +233,11 @@ const handleDragEnd = () => {
     }
 
     .close-button {
-      width: 28px;
-      height: 28px;
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       border: none;
       background: rgba(255, 255, 255, 0.2);
@@ -243,6 +247,8 @@ const handleDragEnd = () => {
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 10;
 
       .icon {
         width: 18px;
@@ -253,6 +259,10 @@ const handleDragEnd = () => {
 
       &:hover {
         background: rgba(255, 255, 255, 0.3);
+      }
+
+      &:active {
+        background: rgba(255, 255, 255, 0.4);
       }
     }
   }

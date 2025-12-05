@@ -38,7 +38,6 @@ function calculateDewPoint(temp: number, humidity: number): number {
 
 export async function fetchWeather(city: string = 'London'): Promise<WeatherData> {
     try {
-        // throw new Error('Weather data not available');
         const response = await fetch(
             `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`
         );
