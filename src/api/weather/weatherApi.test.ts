@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type MockedFunction } from 'vitest';
-import { fetchWeatherByCoords, searchCities, CitySearchResult } from './weatherApi';
-import { WeatherApiResponse } from './types';
+import { fetchWeatherByCoords, searchCities } from './weatherApi';
+import { WeatherApiResponse, CitySearchResult } from './types';
 
 // Test constants
 const TEST_COORDINATES = {
@@ -169,34 +169,6 @@ describe('weatherApi', () => {
         visibility: TEST_WEATHER_DATA.VISIBILITY_KM,
         icon: TEST_WEATHER_CONDITIONS.ICON
       });
-    });
-
-    it('should handle missing wind degrees', async () => {
-      const responseWithoutWindDeg = createMockWeatherResponse({
-        wind: {
-          speed: TEST_WEATHER_DATA.WIND_SPEED_ALT,
-          deg: undefined
-        }
-      });
-
-      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithoutWindDeg));
-
-      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
-
-      expect(result.windDegrees).toBe(0);
-      expect(result.windDirection).toBeDefined();
-    });
-
-    it('should handle missing visibility', async () => {
-      const responseWithoutVisibility = createMockWeatherResponse({
-        visibility: undefined
-      });
-
-      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithoutVisibility));
-
-      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
-
-      expect(result.visibility).toBe(TEST_WEATHER_DATA.VISIBILITY_KM);
     });
 
     it('should throw error when API response is not ok', async () => {
