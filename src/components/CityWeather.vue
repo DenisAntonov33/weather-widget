@@ -1,7 +1,20 @@
 <template>
   <div class="city-weather">
     <CityWeatherSkeleton v-if="loading" />
-    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-else-if="error" class="error-content">
+      <div class="error-location">{{ props.cityName }}</div>
+      <div class="error-main">
+        <ExclamationTriangleIcon class="error-icon" />
+        <div class="error-message">
+          <div class="error-title">Unable to load weather</div>
+          <div class="error-description">{{ error }}</div>
+        </div>
+      </div>
+      <button class="retry-button" @click="loadWeather">
+        <ArrowPathIcon class="retry-icon" />
+        <span>Retry</span>
+      </button>
+    </div>
     <div v-else-if="weather" class="weather-content">
       <div class="location">{{ weather.location }}, {{ weather.country }}</div>
       <div class="main-info">
@@ -53,7 +66,7 @@
 
 <script setup lang="ts">
 import {ref, onMounted, watch} from 'vue';
-import {ArrowRightIcon, MapPinIcon} from '@heroicons/vue/24/outline';
+import {ArrowRightIcon, MapPinIcon, ExclamationTriangleIcon, ArrowPathIcon} from '@heroicons/vue/24/outline';
 import {WeatherData} from '../api/weather/types';
 import {fetchWeather} from '../api/weather/weatherApi';
 import CityWeatherSkeleton from './CityWeatherSkeleton.vue';
@@ -103,13 +116,82 @@ watch(() => props.cityName, () => {
     border-bottom: none;
   }
 
-  .error {
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    color: #ffebee;
-    background: rgba(244, 67, 54, 0.2);
-    border-radius: 8px;
+  .error-content {
+    .error-location {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: left;
+      opacity: 0.95;
+    }
+
+    .error-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: rgba(244, 67, 54, 0.15);
+      border-radius: 8px;
+      border: 1px solid rgba(244, 67, 54, 0.3);
+
+      .error-icon {
+        width: 32px;
+        height: 32px;
+        color: #ffebee;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .error-message {
+        flex: 1;
+
+        .error-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #ffebee;
+          margin-bottom: 6px;
+        }
+
+        .error-description {
+          font-size: 14px;
+          color: rgba(255, 235, 238, 0.8);
+          line-height: 1.4;
+        }
+      }
+    }
+
+    .retry-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      .retry-icon {
+        width: 18px;
+        height: 18px;
+        color: white;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      &:active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
   }
 
   .weather-content {
