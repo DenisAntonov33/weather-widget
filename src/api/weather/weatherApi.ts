@@ -1,4 +1,4 @@
-import { WeatherData, WeatherApiResponse, CitySearchResult } from './types';
+import { WeatherData, WeatherApiResponse, CitySearchResult, GeocodingApiResponse } from './types';
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 
@@ -74,7 +74,6 @@ function transformWeatherData(data: WeatherApiResponse): WeatherData {
 
 export async function fetchWeather(city: string = 'London'): Promise<WeatherData> {
     try {
-        console.log('qwe: ', API_KEY);
         const response = await fetch(
             `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`
         );
@@ -121,8 +120,8 @@ export async function searchCities(query: string, limit: number = 3): Promise<Ci
             return [];
         }
 
-        const data = await response.json();
-        return data.map((item: any) => ({
+        const data: GeocodingApiResponse[] = await response.json();
+        return data.map((item) => ({
             name: item.name,
             country: item.country,
             state: item.state,

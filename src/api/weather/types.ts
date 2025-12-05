@@ -46,3 +46,11 @@ export interface CitySearchResult {
     lat: number;
     lon: number;
 }
+
+export interface GeocodingApiResponse {
+    name: string;
+    country: string;
+    state?: string;
+    lat: number;
+    lon: number;
+}

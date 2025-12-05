@@ -1,310 +1,340 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchWeatherByCoords, searchCities } from './weatherApi';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockedFunction } from 'vitest';
+import { fetchWeatherByCoords, searchCities, CitySearchResult } from './weatherApi';
+import { WeatherApiResponse } from './types';
 
-// Mock global fetch
-global.fetch = vi.fn();
+// Test constants
+const TEST_COORDINATES = {
+  LONDON_LAT: 51.5074,
+  LONDON_LON: -0.1278,
+  PARIS_LAT: 48.8566,
+  PARIS_LON: 2.3522,
+  EKATERINBURG_LAT: 56.8431,
+  EKATERINBURG_LON: 60.6454
+};
+
+const TEST_TEMPERATURES = {
+  BASE_TEMP: 15.5,
+  BASE_FEELS_LIKE: 14.2,
+  ROUNDED_TEMP: 16,
+  ROUNDED_FEELS_LIKE: 14,
+  DEW_POINT_TEST_TEMP: 20,
+  DEW_POINT_TEST_FEELS_LIKE: 18,
+  DECIMAL_TEMP: 15.7,
+  DECIMAL_FEELS_LIKE: 14.3
+};
+
+const TEST_WEATHER_DATA = {
+  HUMIDITY: 65,
+  PRESSURE: 1013,
+  WIND_SPEED: 3.5,
+  WIND_DEGREES: 180,
+  WIND_SPEED_ALT: 2.0,
+  VISIBILITY_METERS: 10000,
+  VISIBILITY_KM: 10,
+  DEW_POINT_TEST_HUMIDITY: 70,
+  MIN_DEW_POINT: 10,
+  MAX_DEW_POINT: 20
+};
+
+const TEST_LOCATIONS = {
+  LONDON: 'London',
+  LONDON_COUNTRY: 'GB',
+  PARIS: 'Paris',
+  PARIS_COUNTRY: 'FR',
+  NEW_YORK: 'New York',
+  LONDONDERRY: 'Londonderry'
+};
+
+const TEST_WEATHER_CONDITIONS = {
+  CONDITION: 'Clouds',
+  DESCRIPTION: 'scattered clouds',
+  ICON: '03d'
+};
+
+const SEARCH_CONSTANTS = {
+  MIN_QUERY_LENGTH: 2,
+  DEFAULT_LIMIT: 3,
+  CUSTOM_LIMIT: 5
+};
+
+const HTTP_STATUS = {
+  NOT_FOUND: 404,
+  UNAUTHORIZED: 401
+};
+
+// Helper function to create mock fetch response
+function createMockFetchResponse<T>(data: T, ok: boolean = true, status: number = 200): Response {
+  return {
+    ok,
+    status,
+    json: async () => data,
+  } as Response;
+}
+
+// Helper function to create mock weather API response
+function createMockWeatherResponse(overrides?: Partial<WeatherApiResponse>): WeatherApiResponse {
+  return {
+    name: TEST_LOCATIONS.LONDON,
+    sys: { country: TEST_LOCATIONS.LONDON_COUNTRY },
+    main: {
+      temp: TEST_TEMPERATURES.BASE_TEMP,
+      feels_like: TEST_TEMPERATURES.BASE_FEELS_LIKE,
+      humidity: TEST_WEATHER_DATA.HUMIDITY,
+      pressure: TEST_WEATHER_DATA.PRESSURE
+    },
+    weather: [{
+      main: TEST_WEATHER_CONDITIONS.CONDITION,
+      description: TEST_WEATHER_CONDITIONS.DESCRIPTION,
+      icon: TEST_WEATHER_CONDITIONS.ICON
+    }],
+    wind: {
+      speed: TEST_WEATHER_DATA.WIND_SPEED,
+      deg: TEST_WEATHER_DATA.WIND_DEGREES
+    },
+    visibility: TEST_WEATHER_DATA.VISIBILITY_METERS,
+    ...overrides
+  };
+}
+
+// Helper function to create mock city search response
+function createMockCitySearchResponse(): CitySearchResult[] {
+  return [
+    {
+      name: TEST_LOCATIONS.LONDON,
+      country: TEST_LOCATIONS.LONDON_COUNTRY,
+      state: 'England',
+      lat: TEST_COORDINATES.LONDON_LAT,
+      lon: TEST_COORDINATES.LONDON_LON
+    },
+    {
+      name: TEST_LOCATIONS.LONDON,
+      country: 'CA',
+      state: 'Ontario',
+      lat: 42.9849,
+      lon: -81.2453
+    },
+    {
+      name: TEST_LOCATIONS.LONDONDERRY,
+      country: TEST_LOCATIONS.LONDON_COUNTRY,
+      lat: 54.9966,
+      lon: -7.3086
+    }
+  ];
+}
 
 describe('weatherApi', () => {
+  let mockFetch: MockedFunction<typeof fetch>;
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockFetch = vi.fn();
+    global.fetch = mockFetch;
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('fetchWeatherByCoords', () => {
-    const mockWeatherResponse = {
-      name: 'London',
-      sys: { country: 'GB' },
-      main: {
-        temp: 15.5,
-        feels_like: 14.2,
-        humidity: 65,
-        pressure: 1013
-      },
-      weather: [{
-        main: 'Clouds',
-        description: 'scattered clouds',
-        icon: '03d'
-      }],
-      wind: {
-        speed: 3.5,
-        deg: 180
-      },
-      visibility: 10000
-    };
+    const mockWeatherResponse = createMockWeatherResponse();
 
     it('should fetch weather data by coordinates successfully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockWeatherResponse
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(mockWeatherResponse));
 
-      const result = await fetchWeatherByCoords(51.5074, -0.1278);
+      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('lat=51.5074&lon=-0.1278')
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`lat=${TEST_COORDINATES.LONDON_LAT}&lon=${TEST_COORDINATES.LONDON_LON}`)
       );
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('appid=')
       );
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('units=metric')
       );
 
       expect(result).toMatchObject({
-        location: 'London',
-        country: 'GB',
-        temperature: 16, // Math.round(15.5)
-        feelsLike: 14, // Math.round(14.2)
-        condition: 'Clouds',
-        description: 'scattered clouds',
-        windSpeed: 3.5,
+        location: TEST_LOCATIONS.LONDON,
+        country: TEST_LOCATIONS.LONDON_COUNTRY,
+        temperature: TEST_TEMPERATURES.ROUNDED_TEMP,
+        feelsLike: TEST_TEMPERATURES.ROUNDED_FEELS_LIKE,
+        condition: TEST_WEATHER_CONDITIONS.CONDITION,
+        description: TEST_WEATHER_CONDITIONS.DESCRIPTION,
+        windSpeed: TEST_WEATHER_DATA.WIND_SPEED,
         windDirection: expect.any(String),
-        windDegrees: 180,
+        windDegrees: TEST_WEATHER_DATA.WIND_DEGREES,
         windDescription: expect.any(String),
-        pressure: 1013,
-        humidity: 65,
+        pressure: TEST_WEATHER_DATA.PRESSURE,
+        humidity: TEST_WEATHER_DATA.HUMIDITY,
         dewPoint: expect.any(Number),
-        visibility: 10, // Math.round(10000 / 1000 * 10) / 10
-        icon: '03d'
+        visibility: TEST_WEATHER_DATA.VISIBILITY_KM,
+        icon: TEST_WEATHER_CONDITIONS.ICON
       });
     });
 
     it('should handle missing wind degrees', async () => {
-      const responseWithoutWindDeg = {
-        ...mockWeatherResponse,
+      const responseWithoutWindDeg = createMockWeatherResponse({
         wind: {
-          speed: 2.0,
+          speed: TEST_WEATHER_DATA.WIND_SPEED_ALT,
           deg: undefined
         }
-      };
-
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => responseWithoutWindDeg
       });
 
-      const result = await fetchWeatherByCoords(51.5074, -0.1278);
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithoutWindDeg));
+
+      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
 
       expect(result.windDegrees).toBe(0);
       expect(result.windDirection).toBeDefined();
     });
 
     it('should handle missing visibility', async () => {
-      const responseWithoutVisibility = {
-        ...mockWeatherResponse,
+      const responseWithoutVisibility = createMockWeatherResponse({
         visibility: undefined
-      };
-
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => responseWithoutVisibility
       });
 
-      const result = await fetchWeatherByCoords(51.5074, -0.1278);
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithoutVisibility));
 
-      expect(result.visibility).toBe(10); // Default 10000 / 1000 * 10 / 10
+      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
+
+      expect(result.visibility).toBe(TEST_WEATHER_DATA.VISIBILITY_KM);
     });
 
     it('should throw error when API response is not ok', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: false,
-        status: 404
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(null, false, HTTP_STATUS.NOT_FOUND));
 
-      await expect(fetchWeatherByCoords(51.5074, -0.1278)).rejects.toThrow(
-        'Failed to fetch weather data'
-      );
+      await expect(
+        fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON)
+      ).rejects.toThrow('Failed to fetch weather data');
     });
 
     it('should throw error when fetch fails', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(fetchWeatherByCoords(51.5074, -0.1278)).rejects.toThrow(
-        'Failed to fetch weather data'
-      );
+      await expect(
+        fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON)
+      ).rejects.toThrow('Failed to fetch weather data');
     });
 
     it('should calculate dew point correctly', async () => {
-      const responseWithSpecificTemp = {
-        ...mockWeatherResponse,
+      const responseWithSpecificTemp = createMockWeatherResponse({
         main: {
-          temp: 20,
-          feels_like: 18,
-          humidity: 70,
-          pressure: 1013
+          temp: TEST_TEMPERATURES.DEW_POINT_TEST_TEMP,
+          feels_like: TEST_TEMPERATURES.DEW_POINT_TEST_FEELS_LIKE,
+          humidity: TEST_WEATHER_DATA.DEW_POINT_TEST_HUMIDITY,
+          pressure: TEST_WEATHER_DATA.PRESSURE
         }
-      };
-
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => responseWithSpecificTemp
       });
 
-      const result = await fetchWeatherByCoords(51.5074, -0.1278);
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithSpecificTemp));
 
-      expect(result.dewPoint).toBeGreaterThanOrEqual(10);
-      expect(result.dewPoint).toBeLessThanOrEqual(20);
+      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
+
+      expect(result.dewPoint).toBeGreaterThanOrEqual(TEST_WEATHER_DATA.MIN_DEW_POINT);
+      expect(result.dewPoint).toBeLessThanOrEqual(TEST_WEATHER_DATA.MAX_DEW_POINT);
       expect(Number.isInteger(result.dewPoint)).toBe(true);
     });
 
     it('should round temperature and feelsLike correctly', async () => {
-      const responseWithDecimals = {
-        ...mockWeatherResponse,
+      const responseWithDecimals = createMockWeatherResponse({
         main: {
-          temp: 15.7,
-          feels_like: 14.3,
-          humidity: 65,
-          pressure: 1013
+          temp: TEST_TEMPERATURES.DECIMAL_TEMP,
+          feels_like: TEST_TEMPERATURES.DECIMAL_FEELS_LIKE,
+          humidity: TEST_WEATHER_DATA.HUMIDITY,
+          pressure: TEST_WEATHER_DATA.PRESSURE
         }
-      };
-
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => responseWithDecimals
       });
 
-      const result = await fetchWeatherByCoords(51.5074, -0.1278);
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithDecimals));
 
-      expect(result.temperature).toBe(16);
-      expect(result.feelsLike).toBe(14);
+      const result = await fetchWeatherByCoords(TEST_COORDINATES.LONDON_LAT, TEST_COORDINATES.LONDON_LON);
+
+      expect(result.temperature).toBe(TEST_TEMPERATURES.ROUNDED_TEMP);
+      expect(result.feelsLike).toBe(TEST_TEMPERATURES.ROUNDED_FEELS_LIKE);
     });
   });
 
   describe('searchCities', () => {
-    const mockSearchResponse = [
-      {
-        name: 'London',
-        country: 'GB',
-        state: 'England',
-        lat: 51.5074,
-        lon: -0.1278
-      },
-      {
-        name: 'London',
-        country: 'CA',
-        state: 'Ontario',
-        lat: 42.9849,
-        lon: -81.2453
-      },
-      {
-        name: 'Londonderry',
-        country: 'GB',
-        lat: 54.9966,
-        lon: -7.3086
-      }
-    ];
+    const mockSearchResponse = createMockCitySearchResponse();
 
     it('should search cities successfully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockSearchResponse
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(mockSearchResponse));
 
-      const result = await searchCities('London', 5);
+      const result = await searchCities(TEST_LOCATIONS.LONDON, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('q=London')
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`q=${TEST_LOCATIONS.LONDON}`)
       );
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('limit=5')
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`limit=${SEARCH_CONSTANTS.CUSTOM_LIMIT}`)
       );
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('appid=')
       );
 
-      expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({
-        name: 'London',
-        country: 'GB',
-        state: 'England',
-        lat: 51.5074,
-        lon: -0.1278
-      });
-      expect(result[1]).toEqual({
-        name: 'London',
-        country: 'CA',
-        state: 'Ontario',
-        lat: 42.9849,
-        lon: -81.2453
-      });
-      expect(result[2]).toEqual({
-        name: 'Londonderry',
-        country: 'GB',
-        state: undefined,
-        lat: 54.9966,
-        lon: -7.3086
-      });
+      expect(result).toHaveLength(mockSearchResponse.length);
+      expect(result[0]).toEqual(mockSearchResponse[0]);
+      expect(result[1]).toEqual(mockSearchResponse[1]);
+      expect(result[2]).toEqual(mockSearchResponse[2]);
     });
 
-    it('should return empty array for query shorter than 2 characters', async () => {
-      const result1 = await searchCities('L', 5);
-      const result2 = await searchCities('', 5);
-      const result3 = await searchCities('   ', 5);
+    it('should return empty array for query shorter than minimum length', async () => {
+      const shortQuery = 'L';
+      const emptyQuery = '';
+      const whitespaceQuery = '   ';
+
+      const result1 = await searchCities(shortQuery, SEARCH_CONSTANTS.CUSTOM_LIMIT);
+      const result2 = await searchCities(emptyQuery, SEARCH_CONSTANTS.CUSTOM_LIMIT);
+      const result3 = await searchCities(whitespaceQuery, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
       expect(result1).toEqual([]);
       expect(result2).toEqual([]);
       expect(result3).toEqual([]);
-      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should use default limit of 3 when not specified', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockSearchResponse.slice(0, 3)
-      });
+    it('should use default limit when not specified', async () => {
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(mockSearchResponse.slice(0, SEARCH_CONSTANTS.DEFAULT_LIMIT)));
 
-      await searchCities('London');
+      await searchCities(TEST_LOCATIONS.LONDON);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('limit=3')
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`limit=${SEARCH_CONSTANTS.DEFAULT_LIMIT}`)
       );
     });
 
     it('should encode query string correctly', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => []
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse([]));
 
-      await searchCities('New York', 5);
+      await searchCities(TEST_LOCATIONS.NEW_YORK, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('q=New%20York')
       );
     });
 
     it('should handle query with leading/trailing spaces', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => []
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse([]));
 
-      // Note: The function checks trimmed length but uses original query in fetch
-      await searchCities('  London  ', 5);
+      const queryWithSpaces = `  ${TEST_LOCATIONS.LONDON}  `;
+      await searchCities(queryWithSpaces, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
-      expect(global.fetch).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalled();
     });
 
     it('should return empty array when API response is not ok', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: false,
-        status: 401
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(null, false, HTTP_STATUS.UNAUTHORIZED));
 
-      const result = await searchCities('London', 5);
+      const result = await searchCities(TEST_LOCATIONS.LONDON, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
       expect(result).toEqual([]);
     });
 
     it('should return empty array when fetch fails', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const result = await searchCities('London', 5);
+      const result = await searchCities(TEST_LOCATIONS.LONDON, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
       expect(result).toEqual([]);
       expect(consoleSpy).toHaveBeenCalledWith('City search error:', expect.any(Error));
@@ -313,43 +343,29 @@ describe('weatherApi', () => {
     });
 
     it('should handle cities without state property', async () => {
-      const responseWithoutState = [
+      const responseWithoutState: CitySearchResult[] = [
         {
-          name: 'Paris',
-          country: 'FR',
-          lat: 48.8566,
-          lon: 2.3522
+          name: TEST_LOCATIONS.PARIS,
+          country: TEST_LOCATIONS.PARIS_COUNTRY,
+          lat: TEST_COORDINATES.PARIS_LAT,
+          lon: TEST_COORDINATES.PARIS_LON
         }
       ];
 
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => responseWithoutState
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse(responseWithoutState));
 
-      const result = await searchCities('Paris', 5);
+      const result = await searchCities(TEST_LOCATIONS.PARIS, SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
       expect(result[0].state).toBeUndefined();
-      expect(result[0]).toEqual({
-        name: 'Paris',
-        country: 'FR',
-        state: undefined,
-        lat: 48.8566,
-        lon: 2.3522
-      });
+      expect(result[0]).toEqual(responseWithoutState[0]);
     });
 
-
     it('should handle empty API response', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => []
-      });
+      mockFetch.mockResolvedValueOnce(createMockFetchResponse([]));
 
-      const result = await searchCities('NonExistentCity12345', 5);
+      const result = await searchCities('NonExistentCity12345', SEARCH_CONSTANTS.CUSTOM_LIMIT);
 
       expect(result).toEqual([]);
     });
   });
 });
-
