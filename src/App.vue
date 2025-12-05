@@ -222,6 +222,7 @@ onMounted(() => {
   color: white;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   max-width: 350px;
+  min-width: 350px;
   margin: 0 auto;
   position: relative;
   width: fit-content;
