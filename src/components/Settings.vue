@@ -9,7 +9,7 @@
     
     <div class="cities-list">
       <div
-        v-for="(city, index) in cities"
+        v-for="(city, index) in props.cities"
         :key="city.id"
         class="city-item"
         :draggable="true"
@@ -22,10 +22,10 @@
         <span class="city-name">{{ city.country ? `${city.name}, ${city.country}` : city.name }}</span>
         <button 
           class="delete-button" 
-          :class="{ disabled: cities.length === 1 }"
+          :class="{ disabled: props.cities.length === 1 }"
           @click="removeCity(index)" 
-          :disabled="cities.length === 1"
-          :title="cities.length === 1 ? 'Cannot delete the last city' : 'Delete'"
+          :disabled="props.cities.length === 1"
+          :title="props.cities.length === 1 ? 'Cannot delete the last city' : 'Delete'"
         >
           <XMarkIcon class="icon" />
         </button>
@@ -35,13 +35,30 @@
     <div class="add-location-section">
       <label class="add-label">Add Location:</label>
       <div class="input-group">
-        <input
-          v-model="newCityName"
-          type="text"
-          class="city-input"
-          placeholder="New York"
-          @keyup.enter="addCity"
-        />
+        <div class="input-wrapper">
+          <input
+            v-model="newCityName"
+            type="text"
+            class="city-input"
+            placeholder="New York"
+            @input="handleSearch"
+            @focus="showSuggestions = true"
+            @blur="handleBlur"
+            @keydown.enter="handleEnter"
+            @keydown.down="navigateSuggestions(1)"
+            @keydown.up="navigateSuggestions(-1)"
+          />
+          <ul v-if="showSuggestions && citySuggestions.length > 0" class="suggestions-list">
+            <li
+              v-for="(suggestion, index) in citySuggestions"
+              :key="`${suggestion.name}-${suggestion.country}-${index}`"
+              :class="{ active: selectedIndex === index }"
+              @mousedown="selectCity(suggestion)"
+            >
+              {{ suggestion.name }}{{ suggestion.state ? `, ${suggestion.state}` : '' }}, {{ suggestion.country }}
+            </li>
+          </ul>
+        </div>
         <button class="add-button" @click="addCity" title="Add">
           <PlusIcon class="icon" />
         </button>
@@ -53,6 +70,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/vue/24/outline';
+import { searchCities, CitySearchResult } from '../api/weather/weatherApi';
 
 interface City {
   id: string;
@@ -72,13 +90,72 @@ const emit = defineEmits<{
 }>();
 
 const newCityName = ref('');
+const citySuggestions = ref<CitySearchResult[]>([]);
+const showSuggestions = ref(false);
+const selectedIndex = ref(-1);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 let draggedIndex: number | null = null;
+
+const handleSearch = async () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  searchTimeout = setTimeout(async () => {
+    const query = newCityName.value.trim();
+    if (query.length >= 2) {
+      citySuggestions.value = await searchCities(query);
+      showSuggestions.value = true;
+      selectedIndex.value = -1;
+    } else {
+      citySuggestions.value = [];
+      showSuggestions.value = false;
+    }
+  }, 300); // Debounce 300ms
+};
+
+const handleBlur = () => {
+  // Delay to allow click on suggestion
+  setTimeout(() => {
+    showSuggestions.value = false;
+  }, 200);
+};
+
+const handleEnter = () => {
+  if (selectedIndex.value >= 0 && citySuggestions.value[selectedIndex.value]) {
+    selectCity(citySuggestions.value[selectedIndex.value]);
+  } else if (citySuggestions.value.length > 0) {
+    selectCity(citySuggestions.value[0]);
+  } else {
+    addCity();
+  }
+};
+
+const navigateSuggestions = (direction: number) => {
+  if (citySuggestions.value.length === 0) return;
+  
+  selectedIndex.value += direction;
+  if (selectedIndex.value < 0) {
+    selectedIndex.value = citySuggestions.value.length - 1;
+  } else if (selectedIndex.value >= citySuggestions.value.length) {
+    selectedIndex.value = 0;
+  }
+};
+
+const selectCity = (suggestion: CitySearchResult) => {
+  emit('addCity', suggestion.name);
+  newCityName.value = '';
+  citySuggestions.value = [];
+  showSuggestions.value = false;
+};
 
 const addCity = () => {
   const cityName = newCityName.value.trim();
   if (cityName) {
     emit('addCity', cityName);
     newCityName.value = '';
+    citySuggestions.value = [];
+    showSuggestions.value = false;
   }
 };
 
@@ -236,6 +313,8 @@ const handleDragEnd = () => {
         justify-content: center;
 
         .icon {
+          width: 24px;
+          height: 24px;
           color: white;
         }
 
@@ -267,10 +346,17 @@ const handleDragEnd = () => {
     .input-group {
       display: flex;
       gap: 8px;
-      align-items: center;
+      align-items: flex-start;
+      position: relative;
+
+      .input-wrapper {
+        flex: 1;
+        position: relative;
+        min-width: 0;
+      }
 
       .city-input {
-        flex: 1;
+        width: 100%;
         padding: 10px 12px;
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 8px;
@@ -279,6 +365,7 @@ const handleDragEnd = () => {
         font-size: 14px;
         outline: none;
         transition: border-color 0.2s ease;
+        box-sizing: border-box;
 
         &::placeholder {
           color: rgba(255, 255, 255, 0.5);
@@ -286,6 +373,38 @@ const handleDragEnd = () => {
 
         &:focus {
           border-color: rgba(255, 255, 255, 0.6);
+        }
+      }
+
+      .suggestions-list {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: rgba(102, 126, 234, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 8px;
+        list-style: none;
+        padding: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+
+        li {
+          padding: 10px 12px;
+          cursor: pointer;
+          border-radius: 6px;
+          font-size: 14px;
+          color: white;
+          font-weight: 500;
+          transition: background-color 0.2s ease;
+
+          &:hover,
+          &.active {
+            background: rgba(255, 255, 255, 0.2);
+          }
         }
       }
 
@@ -301,6 +420,7 @@ const handleDragEnd = () => {
         align-items: center;
         justify-content: center;
         transition: background-color 0.2s ease;
+        flex-shrink: 0;
 
         .icon {
           width: 20px;

@@ -1,7 +1,8 @@
 import { WeatherData, WeatherApiResponse } from './types';
 
-const API_KEY = 'ed341caa54a850b39807080283b1e9fb\n'; // Replace with your OpenWeatherMap API key
+const API_KEY = 'ed341caa54a850b39807080283b1e9fb'; // Replace with your OpenWeatherMap API key
 const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+const GEOCODING_URL = 'https://api.openweathermap.org/geo/1.0/direct';
 
 // Convert wind direction in degrees to compass direction
 function getWindDirection(deg: number): string {
@@ -110,5 +111,41 @@ export async function fetchWeatherByCoords(lat: number, lon: number): Promise<We
         };
     } catch (error) {
         throw new Error('Failed to fetch weather data');
+    }
+}
+
+export interface CitySearchResult {
+    name: string;
+    country: string;
+    state?: string;
+    lat: number;
+    lon: number;
+}
+
+export async function searchCities(query: string, limit: number = 3): Promise<CitySearchResult[]> {
+    if (!query || query.trim().length < 2) {
+        return [];
+    }
+
+    try {
+        const response = await fetch(
+            `${GEOCODING_URL}?q=${encodeURIComponent(query)}&limit=${limit}&appid=${API_KEY}`
+        );
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data = await response.json();
+        return data.map((item: any) => ({
+            name: item.name,
+            country: item.country,
+            state: item.state,
+            lat: item.lat,
+            lon: item.lon
+        }));
+    } catch (error) {
+        console.error('City search error:', error);
+        return [];
     }
 }
