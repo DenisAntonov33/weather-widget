@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchWeatherByCoords, searchCities, CitySearchResult } from './weatherApi';
+import { fetchWeatherByCoords, searchCities } from './weatherApi';
 
 // Mock global fetch
 global.fetch = vi.fn();

@@ -1,12 +1,4 @@
-import { WeatherData, WeatherApiResponse } from './types';
-
-export interface CitySearchResult {
-    name: string;
-    country: string;
-    state?: string;
-    lat: number;
-    lon: number;
-}
+import { WeatherData, WeatherApiResponse, CitySearchResult } from './types';
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 

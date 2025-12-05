@@ -38,3 +38,11 @@ export interface WeatherApiResponse {
     };
     visibility: number;
 }
+
+export interface CitySearchResult {
+    name: string;
+    country: string;
+    state?: string;
+    lat: number;
+    lon: number;
+}

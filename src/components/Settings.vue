@@ -70,7 +70,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/vue/24/outline';
-import { searchCities, CitySearchResult } from '../api/weather/weatherApi';
+import { searchCities } from '../api/weather/weatherApi';
+import { CitySearchResult } from '../api/weather/types';
 
 interface City {
   id: string;
