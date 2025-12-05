@@ -4,26 +4,36 @@
     <div v-else-if="error" class="error-content">
       <div class="error-location">{{ props.cityName }}</div>
       <div class="error-main">
-        <ExclamationTriangleIcon class="error-icon" />
+        <ExclamationTriangleIcon class="error-icon" aria-hidden="true" />
         <div class="error-message">
           <div class="error-title">Unable to load weather</div>
           <div class="error-description">{{ error }}</div>
         </div>
       </div>
-      <button class="retry-button" @click="loadWeather">
-        <ArrowPathIcon class="retry-icon" />
-        <span>Retry</span>
+      <button 
+        class="retry-button" 
+        @click="handleRetry"
+        :disabled="retrying"
+        aria-label="Retry loading weather data"
+      >
+        <ArrowPathIcon 
+          v-if="!retrying" 
+          class="retry-icon" 
+          aria-hidden="true"
+        />
+        <span v-if="retrying">Retrying...</span>
+        <span v-else>Retry</span>
       </button>
     </div>
     <div v-else-if="weather" class="weather-content">
-      <div class="location">{{ weather.location }}, {{ weather.country }}</div>
+      <div class="location">{{ locationString }}</div>
       <div class="main-info">
         <div class="icon-section">
           <img
-              v-if="weather.icon"
-              :src="`https://openweathermap.org/img/wn/${weather.icon}@2x.png`"
-              :alt="weather.condition"
-              class="weather-icon"
+            v-if="weather.icon"
+            :src="`https://openweathermap.org/img/wn/${weather.icon}@2x.png`"
+            :alt="`${weather.condition} weather icon`"
+            class="weather-icon"
           />
         </div>
         <div class="temperature">
@@ -32,12 +42,16 @@
         </div>
       </div>
       <div class="feels-like-condition">
-        Feels like {{ weather.feelsLike }}°C. {{ capitalize(weather.description) }}. {{ weather.windDescription }}.
+        Feels like {{ weather.feelsLike }}°C. {{ capitalizedDescription }}. {{ weather.windDescription }}.
       </div>
       <div class="details-grid">
         <div class="details-column">
           <div class="detail-item">
-            <ArrowRightIcon class="wind-icon" :style="{ transform: `rotate(${weather.windDegrees}deg)` }" />
+            <ArrowRightIcon 
+              class="wind-icon" 
+              :style="windIconStyle"
+              aria-hidden="true"
+            />
             <span class="value">{{ weather.windSpeed }}m/s {{ weather.windDirection }}</span>
           </div>
           <div class="detail-item">
@@ -51,7 +65,10 @@
         </div>
         <div class="details-column">
           <div class="detail-item">
-            <MapPinIcon class="pressure-icon" />
+            <MapPinIcon 
+              class="pressure-icon" 
+              aria-hidden="true"
+            />
             <span class="value">{{ weather.pressure }}hPa</span>
           </div>
           <div class="detail-item">
@@ -65,11 +82,12 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch} from 'vue';
+import {ref, onMounted, watch, computed} from 'vue';
 import {ArrowRightIcon, MapPinIcon, ExclamationTriangleIcon, ArrowPathIcon} from '@heroicons/vue/24/outline';
 import {WeatherData} from '../api/weather/types';
 import {fetchWeather} from '../api/weather/weatherApi';
 import CityWeatherSkeleton from './CityWeatherSkeleton.vue';
+import {capitalize} from '../utils/capitalize/capitalize';
 
 const props = defineProps<{
   cityName: string;
@@ -78,21 +96,45 @@ const props = defineProps<{
 const weather = ref<WeatherData | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const retrying = ref(false);
 
-const capitalize = (str: string): string => {
-  return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-};
+// Computed properties
+const locationString = computed(() => {
+  return weather.value 
+    ? `${weather.value.location}, ${weather.value.country}`
+    : '';
+});
+
+const capitalizedDescription = computed(() => {
+  return weather.value ? capitalize(weather.value.description) : '';
+});
+
+const windIconStyle = computed(() => {
+  return weather.value 
+    ? { transform: `rotate(${weather.value.windDegrees}deg)` }
+    : {};
+});
 
 const loadWeather = async () => {
   loading.value = true;
   error.value = null;
   try {
     weather.value = await fetchWeather(props.cityName);
-    loading.value = false;
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Unknown error';
+    const errorMessage = err instanceof Error 
+      ? err.message 
+      : 'Failed to load weather data. Please try again.';
+    error.value = errorMessage;
+    console.error('Weather loading error:', err);
+  } finally {
     loading.value = false;
+    retrying.value = false;
   }
+};
+
+const handleRetry = async () => {
+  retrying.value = true;
+  await loadWeather();
 };
 
 onMounted(() => {
@@ -101,7 +143,7 @@ onMounted(() => {
 
 watch(() => props.cityName, () => {
   loadWeather();
-});
+}, { immediate: false });
 </script>
 
 <style scoped lang="scss">
@@ -183,13 +225,18 @@ watch(() => props.cityName, () => {
         color: white;
       }
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.3);
         border-color: rgba(255, 255, 255, 0.4);
       }
 
-      &:active {
+      &:active:not(:disabled) {
         background: rgba(255, 255, 255, 0.25);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
     }
   }
