@@ -17,8 +17,8 @@
         :key="city.id"
         class="city-item"
         :class="{ 
-          'drag-over': dragOverIndex === index,
-          'dragging': draggedIndex === index
+          'drag-over': isDragIndex(dragOverIndex, index),
+          'dragging': isDragIndex(draggedIndex, index)
         }"
         :draggable="true"
         @dragstart="handleDragStart(index, $event)"
@@ -113,6 +113,7 @@ import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon, ArrowPathIcon } from '@h
 import { searchCities } from '../api/weather/weatherApi';
 import { CitySearchResult } from '../api/weather/types';
 import { City } from '../types/city';
+import { parseNumber } from '../utils/parseNumber/parseNumber';
 
 const props = defineProps<{
   cities: City[];
@@ -126,7 +127,6 @@ const emit = defineEmits<{
 }>();
 
 const SEARCH_DEBOUNCE_MS = 300;
-const BLUR_DELAY_MS = 200;
 const MIN_QUERY_LENGTH = 2;
 const MIN_CITIES_REQUIRED = 1;
 
@@ -142,6 +142,12 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 const canAddCity = computed(() => {
   return newCityName.value.trim().length > MIN_QUERY_LENGTH;
 });
+
+// Helper function for template to check if index matches drag index
+const isDragIndex = (dragIndex: number | null, templateIndex: number | string): boolean => {
+  const parsed = parseNumber(templateIndex);
+  return dragIndex !== null && parsed !== null && dragIndex === parsed;
+};
 
 const handleSearch = async () => {
   if (searchTimeout) {
@@ -221,35 +227,43 @@ const addCity = () => {
   }
 };
 
-const removeCity = (index: number) => {
+const removeCity = (index: number | string) => {
+  const numIndex = parseNumber(index);
+  if (numIndex === null) return;
   // Prevent deleting the last city
   if (props.cities.length <= MIN_CITIES_REQUIRED) {
     return;
   }
-  emit('removeCity', index);
+  emit('removeCity', numIndex);
 };
 
-const handleDragStart = (index: number, event: DragEvent) => {
-  draggedIndex.value = index;
+const handleDragStart = (index: number | string, event: DragEvent) => {
+  const numIndex = parseNumber(index);
+  if (numIndex === null) return;
+  draggedIndex.value = numIndex;
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/html', '');
   }
 };
 
-const handleDragOver = (index: number, event: DragEvent) => {
+const handleDragOver = (index: number | string, event: DragEvent) => {
+  const numIndex = parseNumber(index);
+  if (numIndex === null) return;
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = 'move';
   }
-  if (draggedIndex.value !== null && draggedIndex.value !== index) {
-    dragOverIndex.value = index;
+  if (draggedIndex.value !== null && draggedIndex.value !== numIndex) {
+    dragOverIndex.value = numIndex;
   }
 };
 
-const handleDrop = (index: number, event: DragEvent) => {
+const handleDrop = (index: number | string, event: DragEvent) => {
+  const numIndex = parseNumber(index);
+  if (numIndex === null) return;
   event.preventDefault();
-  if (draggedIndex.value !== null && draggedIndex.value !== index) {
-    emit('reorderCities', draggedIndex.value, index);
+  if (draggedIndex.value !== null && draggedIndex.value !== numIndex) {
+    emit('reorderCities', draggedIndex.value, numIndex);
   }
   dragOverIndex.value = null;
 };
