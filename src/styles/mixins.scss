@@ -1,0 +1,86 @@
+@use 'variables' as *;
+
+// Button mixin
+@mixin button-base($size: $button-md) {
+  width: $size;
+  height: $size;
+  border: none;
+  border-radius: $radius-full;
+  background: rgba($color-white, $opacity-background);
+  color: $color-white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition-fast;
+  box-shadow: $shadow-sm;
+
+  &:hover:not(:disabled) {
+    background: rgba($color-white, $opacity-background-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: rgba($color-white, $opacity-background-active);
+  }
+
+  &:disabled {
+    opacity: $opacity-disabled;
+    cursor: not-allowed;
+  }
+}
+
+// Icon mixin
+@mixin icon($size: $icon-md) {
+  width: $size;
+  height: $size;
+  color: $color-white;
+}
+
+// Input mixin
+@mixin input-base {
+  width: 100%;
+  padding: 10px $spacing-md;
+  border: 2px solid rgba($color-white, 0.3);
+  border-radius: $radius-lg;
+  background: rgba($color-white, 0.1);
+  color: $color-white;
+  font-size: $font-sm;
+  outline: none;
+  transition: border-color $transition-fast;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: rgba($color-white, $opacity-placeholder);
+  }
+
+  &:focus {
+    border-color: rgba($color-white, 0.6);
+  }
+}
+
+// Flex center mixin
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex column mixin
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Transparent button mixin (for delete buttons, etc.)
+@mixin button-transparent($size: $button-sm) {
+  @include button-base($size);
+  background: transparent;
+  box-shadow: none;
+  opacity: $opacity-low;
+
+  &:hover:not(:disabled) {
+    opacity: 1;
+    background: transparent;
+  }
+}
+

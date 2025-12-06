@@ -180,13 +180,16 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+@use './styles/variables' as *;
+@use './styles/mixins' as *;
+
 .weather-widget {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  padding: 24px;
-  color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-2xl;
+  color: $color-white;
+  box-shadow: $shadow-md;
   max-width: 350px;
   min-width: 350px;
   margin: 0 auto;
@@ -194,35 +197,14 @@ onMounted(() => {
   width: fit-content;
 
   .settings-button {
+    @include button-base($button-md);
     position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    z-index: 10;
+    top: $spacing-md;
+    right: $spacing-md;
+    z-index: $z-button;
 
     .icon {
-      width: 18px;
-      height: 18px;
-      color: white;
-    }
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    &:active {
-      background: rgba(255, 255, 255, 0.4);
+      @include icon($icon-md);
     }
   }
 
@@ -231,8 +213,7 @@ onMounted(() => {
   }
 
   .weather-view {
-    display: flex;
-    flex-direction: column;
+    @include flex-column;
     min-height: 300px;
   }
 }

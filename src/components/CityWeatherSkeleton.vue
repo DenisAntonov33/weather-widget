@@ -25,13 +25,16 @@
 </script>
 
 <style scoped lang="scss">
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
 .skeleton-loader {
   .skeleton-location {
     width: 60%;
     height: 20px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    margin-bottom: 12px;
+    background: rgba($color-white, $opacity-border);
+    border-radius: $radius-sm;
+    margin-bottom: $spacing-md;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 
@@ -39,21 +42,21 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: $spacing-sm;
 
     .skeleton-icon {
-      width: 64px;
-      height: 64px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
+      width: $icon-weather;
+      height: $icon-weather;
+      background: rgba($color-white, $opacity-border);
+      border-radius: $radius-lg;
       animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
     .skeleton-temperature {
       width: 120px;
-      height: 56px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
+      height: $font-2xl;
+      background: rgba($color-white, $opacity-border);
+      border-radius: $radius-sm;
       margin-left: auto;
       animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
@@ -61,29 +64,28 @@
 
   .skeleton-feels-like {
     width: 85%;
-    height: 16px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    margin-bottom: 16px;
+    height: $spacing-lg;
+    background: rgba($color-white, $opacity-border);
+    border-radius: $radius-sm;
+    margin-bottom: $spacing-lg;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 
   .skeleton-details-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px 20px;
-    padding-top: 16px;
+    gap: $spacing-md $spacing-xl;
+    padding-top: $spacing-lg;
 
     .skeleton-details-column {
-      display: flex;
-      flex-direction: column;
+      @include flex-column;
       gap: 10px;
     }
 
     .skeleton-detail-item {
-      height: 16px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
+      height: $spacing-lg;
+      background: rgba($color-white, $opacity-border);
+      border-radius: $radius-sm;
       animation: skeleton-pulse 1.5s ease-in-out infinite;
 
       &:nth-child(1) {

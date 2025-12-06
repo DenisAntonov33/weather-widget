@@ -131,10 +131,13 @@ watch(() => props.cityName, () => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
 .city-weather {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: $spacing-2xl;
+  padding-bottom: $spacing-2xl;
+  border-bottom: 1px solid rgba($color-white, $opacity-border);
 
   &:last-child {
     margin-bottom: 0;
@@ -144,26 +147,26 @@ watch(() => props.cityName, () => {
 
   .weather-content {
     .location {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
+      font-size: $font-md;
+      font-weight: $weight-semibold;
+      margin-bottom: $spacing-md;
       text-align: left;
-      opacity: 0.95;
+      opacity: $opacity-high;
     }
 
     .main-info {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      margin-bottom: $spacing-sm;
 
       .icon-section {
         flex: 0 0 auto;
       }
 
       .weather-icon {
-        width: 64px;
-        height: 64px;
+        width: $icon-weather;
+        height: $icon-weather;
       }
 
       .temperature {
@@ -171,36 +174,35 @@ watch(() => props.cityName, () => {
         flex: 1;
 
         .temp-value {
-          font-size: 56px;
-          font-weight: 700;
+          font-size: $font-2xl;
+          font-weight: $weight-bold;
           line-height: 1;
         }
 
         .temp-unit {
-          font-size: 32px;
-          opacity: 0.95;
+          font-size: $font-xl;
+          opacity: $opacity-high;
           vertical-align: top;
         }
       }
     }
 
     .feels-like-condition {
-      font-size: 14px;
-      opacity: 0.9;
+      font-size: $font-sm;
+      opacity: $opacity-medium;
       text-align: left;
-      margin-bottom: 16px;
+      margin-bottom: $spacing-lg;
       line-height: 1.4;
     }
 
     .details-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px 20px;
-      padding-top: 16px;
+      gap: $spacing-md $spacing-xl;
+      padding-top: $spacing-lg;
 
       .details-column {
-        display: flex;
-        flex-direction: column;
+        @include flex-column;
         gap: 10px;
       }
 
@@ -208,32 +210,28 @@ watch(() => props.cityName, () => {
         display: flex;
         flex-direction: row;
         align-items: center;
-        gap: 8px;
-        font-size: 13px;
+        gap: $spacing-sm;
+        font-size: $font-xs;
 
         .wind-icon {
-          width: 16px;
-          height: 16px;
-          color: white;
-          opacity: 0.9;
+          @include icon($icon-sm);
+          opacity: $opacity-medium;
           transform-origin: center;
         }
 
         .pressure-icon {
-          width: 16px;
-          height: 16px;
-          color: white;
-          opacity: 0.9;
+          @include icon($icon-sm);
+          opacity: $opacity-medium;
         }
 
         .label {
-          opacity: 0.9;
-          font-weight: 500;
+          opacity: $opacity-medium;
+          font-weight: $weight-medium;
         }
 
         .value {
-          opacity: 0.95;
-          font-weight: 400;
+          opacity: $opacity-high;
+          font-weight: $weight-normal;
         }
       }
     }

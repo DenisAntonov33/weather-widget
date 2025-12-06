@@ -267,78 +267,59 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
 .settings-panel {
   .settings-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: $spacing-xl;
     position: relative;
 
     .settings-title {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: $font-lg;
+      font-weight: $weight-semibold;
       margin: 0;
-      opacity: 0.95;
+      opacity: $opacity-high;
     }
 
     .close-button {
+      @include button-base($button-md);
       position: absolute;
-      top: -12px;
-      right: -12px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      z-index: 10;
+      top: -$spacing-md;
+      right: -$spacing-md;
+      z-index: $z-button;
 
       .icon {
-        width: 18px;
-        height: 18px;
-        color: white;
+        @include icon($icon-md);
         stroke-width: 2.5;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.3);
-      }
-
-      &:active {
-        background: rgba(255, 255, 255, 0.4);
       }
     }
   }
 
   .cities-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 24px;
+    @include flex-column;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-2xl;
 
     .city-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      gap: $spacing-md;
+      padding: $spacing-md;
+      background: rgba($color-white, 0.1);
+      border-radius: $radius-lg;
       cursor: move;
-      transition: background-color 0.2s ease;
+      transition: background-color $transition-fast;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba($color-white, 0.15);
       }
 
       &.drag-over {
-        border-top: 2px solid rgba(255, 255, 255, 0.5);
+        border-top: 2px solid rgba($color-white, 0.5);
       }
 
       &.dragging {
@@ -346,10 +327,8 @@ onUnmounted(() => {
       }
 
       .drag-handle {
-        width: 14px;
-        height: 14px;
-        color: white;
-        opacity: 0.7;
+        @include icon($icon-xs);
+        opacity: $opacity-low;
         cursor: grab;
         user-select: none;
 
@@ -360,39 +339,21 @@ onUnmounted(() => {
 
       .city-name {
         flex: 1;
-        font-size: 14px;
-        opacity: 0.95;
+        font-size: $font-sm;
+        opacity: $opacity-high;
       }
 
       .delete-button {
-        width: 28px;
-        height: 28px;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        opacity: 0.7;
-        transition: opacity 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        @include button-transparent($button-sm);
+        transition: opacity $transition-fast;
 
         .icon {
-          width: 24px;
-          height: 24px;
-          color: white;
+          @include icon($icon-xl);
         }
 
-        &:hover:not(.disabled) {
-          opacity: 1;
-        }
-
-        &.disabled {
-          opacity: 0.3;
-          cursor: not-allowed;
-        }
-
+        &.disabled,
         &:disabled {
-          cursor: not-allowed;
+          opacity: $opacity-disabled;
         }
       }
     }
@@ -401,15 +362,15 @@ onUnmounted(() => {
   .add-location-section {
     .add-label {
       display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 8px;
-      opacity: 0.9;
+      font-size: $font-sm;
+      font-weight: $weight-medium;
+      margin-bottom: $spacing-sm;
+      opacity: $opacity-medium;
     }
 
     .input-group {
       display: flex;
-      gap: 8px;
+      gap: $spacing-sm;
       align-items: flex-start;
       position: relative;
 
@@ -420,68 +381,48 @@ onUnmounted(() => {
       }
 
       .city-input {
-        width: 100%;
-        padding: 10px 12px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.2s ease;
-        box-sizing: border-box;
-
-        &::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-        }
-
-        &:focus {
-          border-color: rgba(255, 255, 255, 0.6);
-        }
+        @include input-base;
       }
 
       .suggestions-list {
         position: absolute;
-        top: calc(100% + 4px);
+        top: calc(100% + $spacing-xs);
         left: 0;
         right: 0;
-        background: rgba(102, 126, 234, 0.95);
+        background: rgba($color-primary, 0.95);
         backdrop-filter: blur(10px);
-        border-radius: 8px;
+        border-radius: $radius-lg;
         list-style: none;
-        padding: 4px;
+        padding: $spacing-xs;
         max-height: 200px;
         overflow-y: auto;
-        z-index: 100;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        border: 2px solid rgba(255, 255, 255, 0.3);
+        z-index: $z-dropdown;
+        box-shadow: $shadow-sm;
+        border: 2px solid rgba($color-white, 0.3);
 
         li {
-          padding: 10px 12px;
+          padding: 10px $spacing-md;
           cursor: pointer;
-          border-radius: 6px;
-          font-size: 14px;
-          color: white;
-          font-weight: 500;
-          transition: background-color 0.2s ease;
-          display: flex;
-          align-items: center;
-          gap: 8px;
+          border-radius: $radius-md;
+          font-size: $font-sm;
+          color: $color-white;
+          font-weight: $weight-medium;
+          transition: background-color $transition-fast;
+          @include flex-center;
+          gap: $spacing-sm;
 
           &:hover,
           &.active {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba($color-white, $opacity-background);
           }
 
           &.searching-item {
             cursor: default;
-            opacity: 0.8;
+            opacity: $opacity-low;
             justify-content: center;
 
             .spinner-icon {
-              width: 16px;
-              height: 16px;
-              color: white;
+              @include icon($icon-sm);
               animation: spin 1s linear infinite;
             }
           }
@@ -489,36 +430,13 @@ onUnmounted(() => {
       }
 
       .add-button {
-        width: 40px;
-        height: 40px;
-        border: none;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s ease, opacity 0.2s ease;
+        @include button-base($button-lg);
+        border-radius: $radius-lg;
         flex-shrink: 0;
+        transition: background-color $transition-fast, opacity $transition-fast;
 
         .icon {
-          width: 20px;
-          height: 20px;
-          color: white;
-        }
-
-        &:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.3);
-        }
-
-        &:active:not(:disabled) {
-          background: rgba(255, 255, 255, 0.4);
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+          @include icon($icon-lg);
         }
       }
     }

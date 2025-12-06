@@ -1,0 +1,71 @@
+// Colors
+$color-white: #ffffff;
+$color-primary: #667eea;
+$color-secondary: #764ba2;
+
+// Opacity values
+$opacity-high: 0.95;
+$opacity-medium: 0.9;
+$opacity-low: 0.7;
+$opacity-disabled: 0.3;
+$opacity-background: 0.2;
+$opacity-background-hover: 0.3;
+$opacity-background-active: 0.4;
+$opacity-border: 0.15;
+$opacity-placeholder: 0.5;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-2xl: 24px;
+
+// Border radius
+$radius-sm: 4px;
+$radius-md: 6px;
+$radius-lg: 8px;
+$radius-xl: 16px;
+$radius-full: 50%;
+
+// Transitions
+$transition-fast: 0.2s ease;
+$transition-base: 0.3s ease;
+
+// Icon sizes
+$icon-xs: 14px;
+$icon-sm: 16px;
+$icon-md: 18px;
+$icon-lg: 20px;
+$icon-xl: 24px;
+$icon-2xl: 32px;
+$icon-weather: 64px;
+
+// Button sizes
+$button-sm: 28px;
+$button-md: 32px;
+$button-lg: 40px;
+
+// Z-index
+$z-dropdown: 100;
+$z-button: 10;
+
+// Font sizes
+$font-xs: 13px;
+$font-sm: 14px;
+$font-md: 16px;
+$font-lg: 18px;
+$font-xl: 32px;
+$font-2xl: 56px;
+
+// Font weights
+$weight-normal: 400;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+
+// Shadows
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+$shadow-md: 0 8px 32px rgba(0, 0, 0, 0.1);
+

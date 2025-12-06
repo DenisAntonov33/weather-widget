@@ -45,32 +45,33 @@ const handleRetry = () => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
 .error-content {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   min-height: 270px;
 
   .error-location {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
+    font-size: $font-md;
+    font-weight: $weight-semibold;
+    margin-bottom: $spacing-md;
     text-align: left;
-    opacity: 0.95;
+    opacity: $opacity-high;
   }
 
   .error-main {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 8px;
-    padding: 16px;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-sm;
+    padding: $spacing-lg;
     background: rgba(244, 67, 54, 0.15);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     border: 1px solid rgba(244, 67, 54, 0.3);
 
     .error-icon {
-      width: 32px;
-      height: 32px;
+      @include icon($icon-2xl);
       color: #ffebee;
       flex-shrink: 0;
       margin-top: 2px;
@@ -80,14 +81,14 @@ const handleRetry = () => {
       flex: 1;
 
       .error-title {
-        font-size: 16px;
-        font-weight: 600;
+        font-size: $font-md;
+        font-weight: $weight-semibold;
         color: #ffebee;
         margin-bottom: 6px;
       }
 
       .error-description {
-        font-size: 14px;
+        font-size: $font-sm;
         color: rgba(255, 235, 238, 0.8);
         line-height: 1.4;
       }
@@ -96,39 +97,35 @@ const handleRetry = () => {
 
   .error-spacer {
     flex: 1;
-    min-height: 16px;
+    min-height: $spacing-lg;
   }
 
   .retry-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    @include flex-center;
+    gap: $spacing-sm;
     width: 100%;
-    padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    color: white;
-    font-size: 14px;
-    font-weight: 500;
+    padding: $spacing-md $spacing-lg;
+    background: rgba($color-white, $opacity-background);
+    border: 2px solid rgba($color-white, 0.3);
+    border-radius: $radius-lg;
+    color: $color-white;
+    font-size: $font-sm;
+    font-weight: $weight-medium;
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 16px;
+    transition: all $transition-fast;
+    margin-top: $spacing-lg;
 
     .retry-icon {
-      width: 18px;
-      height: 18px;
-      color: white;
+      @include icon($icon-md);
     }
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.3);
-      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba($color-white, $opacity-background-hover);
+      border-color: rgba($color-white, 0.4);
     }
 
     &:active:not(:disabled) {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba($color-white, $opacity-background-active);
     }
 
     &:disabled {
