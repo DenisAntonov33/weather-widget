@@ -52,15 +52,21 @@
             @keydown.down="navigateSuggestions(1)"
             @keydown.up="navigateSuggestions(-1)"
           />
-          <ul v-if="showSuggestions && citySuggestions.length > 0" class="suggestions-list">
-            <li
-              v-for="(suggestion, index) in citySuggestions"
-              :key="`${suggestion.name}-${suggestion.country}-${index}`"
-              :class="{ active: selectedIndex === index }"
-              @mousedown="selectCity(suggestion)"
-            >
-              {{ suggestion.name }}{{ suggestion.state ? `, ${suggestion.state}` : '' }}, {{ suggestion.country }}
+          <ul v-if="showSuggestions && (citySuggestions.length > 0 || searching)" class="suggestions-list">
+            <li v-if="searching" class="searching-item">
+              <ArrowPathIcon class="spinner-icon" />
+              <span>Searching...</span>
             </li>
+            <template v-else>
+              <li
+                v-for="(suggestion, index) in citySuggestions"
+                :key="`${suggestion.name}-${suggestion.country}-${index}`"
+                :class="{ active: selectedIndex === index }"
+                @mousedown="selectCity(suggestion)"
+              >
+                {{ suggestion.name }}{{ suggestion.state ? `, ${suggestion.state}` : '' }}, {{ suggestion.country }}
+              </li>
+            </template>
           </ul>
         </div>
         <button class="add-button" @click="addCity" title="Add">
@@ -73,7 +79,7 @@
 
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
-import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import { searchCities } from '../api/weather/weatherApi';
 import { CitySearchResult } from '../api/weather/types';
 import { City } from '../types/city';
@@ -99,6 +105,7 @@ const newCityName = ref('');
 const citySuggestions = ref<CitySearchResult[]>([]);
 const showSuggestions = ref(false);
 const selectedIndex = ref(-1);
+const searching = ref(false);
 const draggedIndex = ref<number | null>(null);
 const dragOverIndex = ref<number | null>(null);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -112,6 +119,7 @@ const handleSearch = async () => {
   searchTimeout = setTimeout(async () => {
     const query = newCityName.value.trim();
     if (query.length >= MIN_QUERY_LENGTH) {
+      searching.value = true;
       try {
         citySuggestions.value = await searchCities(query);
         showSuggestions.value = true;
@@ -120,10 +128,13 @@ const handleSearch = async () => {
         console.error('City search failed:', error);
         citySuggestions.value = [];
         showSuggestions.value = false;
+      } finally {
+        searching.value = false;
       }
     } else {
       citySuggestions.value = [];
       showSuggestions.value = false;
+      searching.value = false;
     }
   }, SEARCH_DEBOUNCE_MS);
 };
@@ -425,10 +436,26 @@ onUnmounted(() => {
           color: white;
           font-weight: 500;
           transition: background-color 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
 
           &:hover,
           &.active {
             background: rgba(255, 255, 255, 0.2);
+          }
+
+          &.searching-item {
+            cursor: default;
+            opacity: 0.8;
+            justify-content: center;
+
+            .spinner-icon {
+              width: 16px;
+              height: 16px;
+              color: white;
+              animation: spin 1s linear infinite;
+            }
           }
         }
       }
@@ -462,6 +489,15 @@ onUnmounted(() => {
         }
       }
     }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
