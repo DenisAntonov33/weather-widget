@@ -26,10 +26,10 @@
         <span class="city-name">{{ city.country ? `${city.name}, ${city.country}` : city.name }}</span>
         <button 
           class="delete-button" 
-          :class="{ disabled: props.cities.length === 1 }"
+          :class="{ disabled: props.cities.length <= MIN_CITIES_REQUIRED }"
           @click="removeCity(index)" 
-          :disabled="props.cities.length === 1"
-          :title="props.cities.length === 1 ? 'Cannot delete the last city' : 'Delete'"
+          :disabled="props.cities.length <= MIN_CITIES_REQUIRED"
+          :title="props.cities.length <= MIN_CITIES_REQUIRED ? 'Cannot delete the last city' : 'Delete'"
         >
           <XMarkIcon class="icon" />
         </button>
@@ -93,6 +93,7 @@ const emit = defineEmits<{
 const SEARCH_DEBOUNCE_MS = 300;
 const BLUR_DELAY_MS = 200;
 const MIN_QUERY_LENGTH = 2;
+const MIN_CITIES_REQUIRED = 1;
 
 const newCityName = ref('');
 const citySuggestions = ref<CitySearchResult[]>([]);
@@ -177,7 +178,7 @@ const addCity = () => {
 
 const removeCity = (index: number) => {
   // Prevent deleting the last city
-  if (props.cities.length <= 1) {
+  if (props.cities.length <= MIN_CITIES_REQUIRED) {
     return;
   }
   emit('removeCity', index);
