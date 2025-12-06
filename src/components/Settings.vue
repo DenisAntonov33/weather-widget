@@ -47,10 +47,11 @@
     </div>
 
     <div class="add-location-section">
-      <label class="add-label">Add Location:</label>
+      <label class="add-label" for="city-input">Add Location:</label>
       <div class="input-group">
         <div class="input-wrapper">
           <input
+            id="city-input"
             v-model="newCityName"
             type="text"
             class="city-input"
@@ -94,8 +95,9 @@
         </div>
         <button 
           class="add-button" 
-          @click="addCity" 
-          aria-label="Add city"
+          @click="addCity"
+          :disabled="!canAddCity"
+          :aria-label="canAddCity ? 'Add city' : 'Add city, input is empty'"
           title="Add city"
         >
           <PlusIcon class="icon" aria-hidden="true" />
@@ -106,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import { searchCities } from '../api/weather/weatherApi';
 import { CitySearchResult } from '../api/weather/types';
@@ -123,7 +125,6 @@ const emit = defineEmits<{
   (e: 'reorderCities', fromIndex: number, toIndex: number): void;
 }>();
 
-// Constants
 const SEARCH_DEBOUNCE_MS = 300;
 const BLUR_DELAY_MS = 200;
 const MIN_QUERY_LENGTH = 2;
@@ -137,7 +138,10 @@ const searching = ref(false);
 const draggedIndex = ref<number | null>(null);
 const dragOverIndex = ref<number | null>(null);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-let blurTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const canAddCity = computed(() => {
+  return newCityName.value.trim().length > MIN_QUERY_LENGTH;
+});
 
 const handleSearch = async () => {
   if (searchTimeout) {
@@ -168,13 +172,7 @@ const handleSearch = async () => {
 };
 
 const handleBlur = () => {
-  // Delay to allow click on suggestion
-  if (blurTimeout) {
-    clearTimeout(blurTimeout);
-  }
-  blurTimeout = setTimeout(() => {
-    showSuggestions.value = false;
-  }, BLUR_DELAY_MS);
+  showSuggestions.value = false;
 };
 
 const handleEscape = () => {
@@ -264,9 +262,6 @@ const handleDragEnd = () => {
 onUnmounted(() => {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
-  }
-  if (blurTimeout) {
-    clearTimeout(blurTimeout);
   }
 });
 </script>
@@ -504,7 +499,7 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background-color 0.2s ease;
+        transition: background-color 0.2s ease, opacity 0.2s ease;
         flex-shrink: 0;
 
         .icon {
@@ -513,12 +508,17 @@ onUnmounted(() => {
           color: white;
         }
 
-        &:hover {
+        &:hover:not(:disabled) {
           background: rgba(255, 255, 255, 0.3);
         }
 
-        &:active {
+        &:active:not(:disabled) {
           background: rgba(255, 255, 255, 0.4);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       }
     }
