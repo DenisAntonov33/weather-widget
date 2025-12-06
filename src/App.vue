@@ -33,12 +33,7 @@ import { ref, onMounted } from 'vue';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import CityWeather from './components/CityWeather.vue';
 import Settings from './components/Settings.vue';
-
-interface City {
-  id: string;
-  name: string;
-  country?: string;
-}
+import { City } from './types/city';
 
 const showSettings = ref(false);
 const cities = ref<City[]>([]);

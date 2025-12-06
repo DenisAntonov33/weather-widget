@@ -76,12 +76,7 @@ import { ref, onUnmounted } from 'vue';
 import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import { searchCities } from '../api/weather/weatherApi';
 import { CitySearchResult } from '../api/weather/types';
-
-interface City {
-  id: string;
-  name: string;
-  country?: string;
-}
+import { City } from '../types/city';
 
 const props = defineProps<{
   cities: City[];
