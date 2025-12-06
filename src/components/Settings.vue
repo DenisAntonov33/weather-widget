@@ -2,8 +2,12 @@
   <div class="settings-panel">
     <div class="settings-header">
       <h2 class="settings-title">Settings</h2>
-      <button class="close-button" @click="$emit('close')">
-        <ArrowLeftIcon class="icon" />
+      <button 
+        class="close-button" 
+        @click="$emit('close')"
+        aria-label="Close settings"
+      >
+        <ArrowLeftIcon class="icon" aria-hidden="true" />
       </button>
     </div>
     
@@ -22,16 +26,22 @@
         @drop="handleDrop(index, $event)"
         @dragend="handleDragEnd"
       >
-        <Bars3Icon class="drag-handle" />
+        <Bars3Icon 
+          class="drag-handle" 
+          aria-label="Drag to reorder"
+          role="button"
+          tabindex="0"
+        />
         <span class="city-name">{{ city.country ? `${city.name}, ${city.country}` : city.name }}</span>
         <button 
           class="delete-button" 
           :class="{ disabled: props.cities.length <= MIN_CITIES_REQUIRED }"
           @click="removeCity(index)" 
           :disabled="props.cities.length <= MIN_CITIES_REQUIRED"
+          :aria-label="props.cities.length <= MIN_CITIES_REQUIRED ? 'Cannot delete the last city' : `Delete ${city.name}`"
           :title="props.cities.length <= MIN_CITIES_REQUIRED ? 'Cannot delete the last city' : 'Delete'"
         >
-          <XMarkIcon class="icon" />
+          <XMarkIcon class="icon" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -45,22 +55,35 @@
             type="text"
             class="city-input"
             placeholder="New York"
+            :aria-expanded="showSuggestions && (citySuggestions.length > 0 || searching)"
+            aria-autocomplete="list"
+            aria-controls="city-suggestions"
+            aria-label="Search for a city"
             @input="handleSearch"
             @focus="showSuggestions = true"
             @blur="handleBlur"
             @keydown.enter="handleEnter"
-            @keydown.down="navigateSuggestions(1)"
-            @keydown.up="navigateSuggestions(-1)"
+            @keydown.down.prevent="navigateSuggestions(1)"
+            @keydown.up.prevent="navigateSuggestions(-1)"
+            @keydown.escape="handleEscape"
           />
-          <ul v-if="showSuggestions && (citySuggestions.length > 0 || searching)" class="suggestions-list">
-            <li v-if="searching" class="searching-item">
-              <ArrowPathIcon class="spinner-icon" />
+          <ul 
+            id="city-suggestions"
+            v-if="showSuggestions && (citySuggestions.length > 0 || searching)" 
+            class="suggestions-list"
+            role="listbox"
+            aria-label="City suggestions"
+          >
+            <li v-if="searching" class="searching-item" role="status" aria-live="polite">
+              <ArrowPathIcon class="spinner-icon" aria-hidden="true" />
               <span>Searching...</span>
             </li>
             <template v-else>
               <li
                 v-for="(suggestion, index) in citySuggestions"
                 :key="`${suggestion.name}-${suggestion.country}-${index}`"
+                role="option"
+                :aria-selected="selectedIndex === index"
                 :class="{ active: selectedIndex === index }"
                 @mousedown="selectCity(suggestion)"
               >
@@ -69,8 +92,13 @@
             </template>
           </ul>
         </div>
-        <button class="add-button" @click="addCity" title="Add">
-          <PlusIcon class="icon" />
+        <button 
+          class="add-button" 
+          @click="addCity" 
+          aria-label="Add city"
+          title="Add city"
+        >
+          <PlusIcon class="icon" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -147,6 +175,11 @@ const handleBlur = () => {
   blurTimeout = setTimeout(() => {
     showSuggestions.value = false;
   }, BLUR_DELAY_MS);
+};
+
+const handleEscape = () => {
+  showSuggestions.value = false;
+  selectedIndex.value = -1;
 };
 
 const handleEnter = () => {
