@@ -159,20 +159,23 @@ const navigateSuggestions = (direction: number) => {
   }
 };
 
-const selectCity = (suggestion: CitySearchResult) => {
-  emit('addCity', suggestion.name);
+const clearSuggestions = () => {
   newCityName.value = '';
   citySuggestions.value = [];
   showSuggestions.value = false;
+  selectedIndex.value = -1;
+};
+
+const selectCity = (suggestion: CitySearchResult) => {
+  emit('addCity', suggestion.name);
+  clearSuggestions();
 };
 
 const addCity = () => {
   const cityName = newCityName.value.trim();
   if (cityName) {
     emit('addCity', cityName);
-    newCityName.value = '';
-    citySuggestions.value = [];
-    showSuggestions.value = false;
+    clearSuggestions();
   }
 };
 
