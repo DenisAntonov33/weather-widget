@@ -8,10 +8,6 @@ class WeatherWidgetElement extends HTMLElement {
     connectedCallback() {
         const shadowRoot = this.attachShadow({ mode: 'open' });
 
-        // Create a container for Vue app
-        const container = document.createElement('div');
-        shadowRoot.appendChild(container);
-
         // Track which styles we've already copied
         const copiedStyles = new Set<string>();
 
@@ -53,9 +49,9 @@ class WeatherWidgetElement extends HTMLElement {
         // Also check existing styles in case they were added before observer started
         document.querySelectorAll('style').forEach(injectStyles);
 
-        // Create Vue app
+        // Create Vue app and mount directly to shadow root
         this.app = createApp(WeatherWidget);
-        this.app.mount(container);
+        this.app.mount(shadowRoot as any);
 
         // Store observer reference for cleanup
         (this as any)._styleObserver = observer;
