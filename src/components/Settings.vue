@@ -94,6 +94,11 @@ const emit = defineEmits<{
   (e: 'reorderCities', fromIndex: number, toIndex: number): void;
 }>();
 
+// Constants
+const SEARCH_DEBOUNCE_MS = 300;
+const BLUR_DELAY_MS = 200;
+const MIN_QUERY_LENGTH = 2;
+
 const newCityName = ref('');
 const citySuggestions = ref<CitySearchResult[]>([]);
 const showSuggestions = ref(false);
@@ -110,15 +115,21 @@ const handleSearch = async () => {
 
   searchTimeout = setTimeout(async () => {
     const query = newCityName.value.trim();
-    if (query.length >= 2) {
-      citySuggestions.value = await searchCities(query);
-      showSuggestions.value = true;
-      selectedIndex.value = -1;
+    if (query.length >= MIN_QUERY_LENGTH) {
+      try {
+        citySuggestions.value = await searchCities(query);
+        showSuggestions.value = true;
+        selectedIndex.value = -1;
+      } catch (error) {
+        console.error('City search failed:', error);
+        citySuggestions.value = [];
+        showSuggestions.value = false;
+      }
     } else {
       citySuggestions.value = [];
       showSuggestions.value = false;
     }
-  }, 300); // Debounce 300ms
+  }, SEARCH_DEBOUNCE_MS);
 };
 
 const handleBlur = () => {
@@ -128,7 +139,7 @@ const handleBlur = () => {
   }
   blurTimeout = setTimeout(() => {
     showSuggestions.value = false;
-  }, 200);
+  }, BLUR_DELAY_MS);
 };
 
 const handleEnter = () => {
