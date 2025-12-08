@@ -9,7 +9,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "type-check": "webpack --mode production --config webpack.config.js --bail",
-    "lint": "eslint . --ext .js,.ts,.vue",
+    "lint": "eslint . --ext .js,.ts,.vue --max-warnings 0",
     "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
     "format": "prettier --write \"src/**/*.{js,ts,vue,scss,json}\"",
     "format:check": "prettier --check \"src/**/*.{js,ts,vue,scss,json}\""

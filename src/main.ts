@@ -53,10 +53,10 @@ class WeatherWidgetElement extends HTMLElement {
 
     // Create Vue app and mount directly to shadow root
     this.app = createApp(WeatherWidget);
-    this.app.mount(shadowRoot as any);
+    this.app.mount(shadowRoot as unknown as Element);
 
     // Store observer reference for cleanup
-    (this as any)._styleObserver = observer;
+    (this as unknown as { _styleObserver?: MutationObserver })._styleObserver = observer;
   }
 
   disconnectedCallback() {
@@ -64,8 +64,9 @@ class WeatherWidgetElement extends HTMLElement {
       this.app.unmount();
     }
     // Clean up MutationObserver
-    if ((this as any)._styleObserver) {
-      (this as any)._styleObserver.disconnect();
+    const observer = (this as unknown as { _styleObserver?: MutationObserver })._styleObserver;
+    if (observer) {
+      observer.disconnect();
     }
   }
 }
