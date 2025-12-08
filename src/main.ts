@@ -3,7 +3,7 @@ import WeatherWidget from './App.vue';
 
 // Define custom element
 class WeatherWidgetElement extends HTMLElement {
-  private app: any;
+  private app: ReturnType<typeof createApp> | null = null;
 
   connectedCallback() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
