@@ -25,16 +25,13 @@
         </div>
       </div>
       <div class="feels-like-condition">
-        Feels like {{ weather.feelsLike }}°C. {{ capitalizedDescription }}. {{ weather.windDescription }}.
+        Feels like {{ weather.feelsLike }}°C. {{ capitalizedDescription }}.
+        {{ weather.windDescription }}.
       </div>
       <div class="details-grid">
         <div class="details-column">
           <div class="detail-item">
-            <ArrowRightIcon 
-              class="wind-icon" 
-              :style="windIconStyle"
-              aria-hidden="true"
-            />
+            <ArrowRightIcon class="wind-icon" :style="windIconStyle" aria-hidden="true" />
             <span class="value">{{ weather.windSpeed }}m/s {{ weather.windDirection }}</span>
           </div>
           <div class="detail-item">
@@ -48,10 +45,7 @@
         </div>
         <div class="details-column">
           <div class="detail-item">
-            <MapPinIcon 
-              class="pressure-icon" 
-              aria-hidden="true"
-            />
+            <MapPinIcon class="pressure-icon" aria-hidden="true" />
             <span class="value">{{ weather.pressure }}hPa</span>
           </div>
           <div class="detail-item">
@@ -65,13 +59,13 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch, computed} from 'vue';
-import {ArrowRightIcon, MapPinIcon} from '@heroicons/vue/24/outline';
-import {WeatherData} from '../api/weather/types';
-import {fetchWeather} from '../api/weather/weatherApi';
+import { ref, onMounted, watch, computed } from 'vue';
+import { ArrowRightIcon, MapPinIcon } from '@heroicons/vue/24/outline';
+import { WeatherData } from '../api/weather/types';
+import { fetchWeather } from '../api/weather/weatherApi';
 import CityWeatherSkeleton from './CityWeatherSkeleton.vue';
 import CityWeatherError from './CityWeatherError.vue';
-import {capitalize} from '../utils/capitalize/capitalize';
+import { capitalize } from '../utils/capitalize/capitalize';
 
 const props = defineProps<{
   cityName: string;
@@ -84,9 +78,7 @@ const retrying = ref(false);
 
 // Computed properties
 const locationString = computed(() => {
-  return weather.value 
-    ? `${weather.value.location}, ${weather.value.country}`
-    : '';
+  return weather.value ? `${weather.value.location}, ${weather.value.country}` : '';
 });
 
 const capitalizedDescription = computed(() => {
@@ -94,9 +86,7 @@ const capitalizedDescription = computed(() => {
 });
 
 const windIconStyle = computed(() => {
-  return weather.value 
-    ? { transform: `rotate(${weather.value.windDegrees}deg)` }
-    : {};
+  return weather.value ? { transform: `rotate(${weather.value.windDegrees}deg)` } : {};
 });
 
 const loadWeather = async () => {
@@ -105,9 +95,8 @@ const loadWeather = async () => {
   try {
     weather.value = await fetchWeather(props.cityName);
   } catch (err) {
-    const errorMessage = err instanceof Error 
-      ? err.message 
-      : 'Failed to load weather data. Please try again.';
+    const errorMessage =
+      err instanceof Error ? err.message : 'Failed to load weather data. Please try again.';
     error.value = errorMessage;
     console.error('Weather loading error:', err);
   } finally {
@@ -125,9 +114,13 @@ onMounted(() => {
   loadWeather();
 });
 
-watch(() => props.cityName, () => {
-  loadWeather();
-}, { immediate: false });
+watch(
+  () => props.cityName,
+  () => {
+    loadWeather();
+  },
+  { immediate: false }
+);
 </script>
 
 <style scoped lang="scss">

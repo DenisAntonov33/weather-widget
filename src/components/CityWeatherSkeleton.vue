@@ -104,7 +104,8 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -112,4 +113,3 @@
   }
 }
 </style>
-

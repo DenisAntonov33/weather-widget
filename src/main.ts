@@ -3,74 +3,76 @@ import WeatherWidget from './App.vue';
 
 // Define custom element
 class WeatherWidgetElement extends HTMLElement {
-    private app: any;
+  private app: any;
 
-    connectedCallback() {
-        const shadowRoot = this.attachShadow({ mode: 'open' });
+  connectedCallback() {
+    const shadowRoot = this.attachShadow({ mode: 'open' });
 
-        // Track which styles we've already copied
-        const copiedStyles = new Set<string>();
+    // Track which styles we've already copied
+    const copiedStyles = new Set<string>();
 
-        // Function to inject styles into shadow DOM
-        const injectStyles = (styleElement: HTMLStyleElement) => {
-            const content = styleElement.textContent || '';
-            // Check if this style belongs to our component
-            if (content.includes('weather-widget') || 
-                content.includes('settings-button') ||
-                content.includes('city-weather') ||
-                content.includes('data-v-')) {
-                // Check if we haven't already copied this style
-                if (!copiedStyles.has(content) && content.trim()) {
-                    const shadowStyle = document.createElement('style');
-                    shadowStyle.textContent = content;
-                    shadowRoot.insertBefore(shadowStyle, shadowRoot.firstChild);
-                    copiedStyles.add(content);
-                }
-            }
-        };
-
-        // Use MutationObserver to watch for style elements being added to document head
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeName === 'STYLE' && node instanceof HTMLStyleElement) {
-                        injectStyles(node);
-                    }
-                });
-            });
-        });
-
-        // Start observing the document head for style additions
-        observer.observe(document.head, {
-            childList: true,
-            subtree: false
-        });
-
-        // Also check existing styles in case they were added before observer started
-        document.querySelectorAll('style').forEach(injectStyles);
-
-        // Create Vue app and mount directly to shadow root
-        this.app = createApp(WeatherWidget);
-        this.app.mount(shadowRoot as any);
-
-        // Store observer reference for cleanup
-        (this as any)._styleObserver = observer;
-    }
-
-    disconnectedCallback() {
-        if (this.app) {
-            this.app.unmount();
+    // Function to inject styles into shadow DOM
+    const injectStyles = (styleElement: HTMLStyleElement) => {
+      const content = styleElement.textContent || '';
+      // Check if this style belongs to our component
+      if (
+        content.includes('weather-widget') ||
+        content.includes('settings-button') ||
+        content.includes('city-weather') ||
+        content.includes('data-v-')
+      ) {
+        // Check if we haven't already copied this style
+        if (!copiedStyles.has(content) && content.trim()) {
+          const shadowStyle = document.createElement('style');
+          shadowStyle.textContent = content;
+          shadowRoot.insertBefore(shadowStyle, shadowRoot.firstChild);
+          copiedStyles.add(content);
         }
-        // Clean up MutationObserver
-        if ((this as any)._styleObserver) {
-            (this as any)._styleObserver.disconnect();
-        }
+      }
+    };
+
+    // Use MutationObserver to watch for style elements being added to document head
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeName === 'STYLE' && node instanceof HTMLStyleElement) {
+            injectStyles(node);
+          }
+        });
+      });
+    });
+
+    // Start observing the document head for style additions
+    observer.observe(document.head, {
+      childList: true,
+      subtree: false,
+    });
+
+    // Also check existing styles in case they were added before observer started
+    document.querySelectorAll('style').forEach(injectStyles);
+
+    // Create Vue app and mount directly to shadow root
+    this.app = createApp(WeatherWidget);
+    this.app.mount(shadowRoot as any);
+
+    // Store observer reference for cleanup
+    (this as any)._styleObserver = observer;
+  }
+
+  disconnectedCallback() {
+    if (this.app) {
+      this.app.unmount();
     }
+    // Clean up MutationObserver
+    if ((this as any)._styleObserver) {
+      (this as any)._styleObserver.disconnect();
+    }
+  }
 }
 
 // Register custom element
 if (!customElements.get('weather-widget')) {
-    customElements.define('weather-widget', WeatherWidgetElement);
+  customElements.define('weather-widget', WeatherWidgetElement);
 }
 
 // Also export for direct Vue usage

@@ -9,17 +9,13 @@
       </div>
     </div>
     <div class="error-spacer"></div>
-    <button 
-      class="retry-button" 
+    <button
+      class="retry-button"
       @click="handleRetry"
       :disabled="retrying"
       aria-label="Retry loading weather data"
     >
-      <ArrowPathIcon 
-        v-if="!retrying" 
-        class="retry-icon" 
-        aria-hidden="true"
-      />
+      <ArrowPathIcon v-if="!retrying" class="retry-icon" aria-hidden="true" />
       <span v-if="retrying">Retrying...</span>
       <span v-else>Retry</span>
     </button>
@@ -135,4 +131,3 @@ const handleRetry = () => {
   }
 }
 </style>
-

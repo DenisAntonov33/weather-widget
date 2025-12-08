@@ -2,23 +2,19 @@
   <div class="settings-panel">
     <div class="settings-header">
       <h2 class="settings-title">Settings</h2>
-      <button 
-        class="close-button" 
-        @click="$emit('close')"
-        aria-label="Close settings"
-      >
+      <button class="close-button" @click="$emit('close')" aria-label="Close settings">
         <ArrowLeftIcon class="icon" aria-hidden="true" />
       </button>
     </div>
-    
+
     <div class="cities-list">
       <div
         v-for="(city, index) in props.cities"
         :key="city.id"
         class="city-item"
-        :class="{ 
+        :class="{
           'drag-over': isDragIndex(dragOverIndex, index),
-          'dragging': isDragIndex(draggedIndex, index)
+          dragging: isDragIndex(draggedIndex, index),
         }"
         :draggable="true"
         @dragstart="handleDragStart(index, $event)"
@@ -26,20 +22,23 @@
         @drop="handleDrop(index, $event)"
         @dragend="handleDragEnd"
       >
-        <Bars3Icon 
-          class="drag-handle" 
-          aria-label="Drag to reorder"
-          role="button"
-          tabindex="0"
-        />
-        <span class="city-name">{{ city.country ? `${city.name}, ${city.country}` : city.name }}</span>
-        <button 
-          class="delete-button" 
+        <Bars3Icon class="drag-handle" aria-label="Drag to reorder" role="button" tabindex="0" />
+        <span class="city-name">{{
+          city.country ? `${city.name}, ${city.country}` : city.name
+        }}</span>
+        <button
+          class="delete-button"
           :class="{ disabled: props.cities.length <= MIN_CITIES_REQUIRED }"
-          @click="removeCity(index)" 
+          @click="removeCity(index)"
           :disabled="props.cities.length <= MIN_CITIES_REQUIRED"
-          :aria-label="props.cities.length <= MIN_CITIES_REQUIRED ? 'Cannot delete the last city' : `Delete ${city.name}`"
-          :title="props.cities.length <= MIN_CITIES_REQUIRED ? 'Cannot delete the last city' : 'Delete'"
+          :aria-label="
+            props.cities.length <= MIN_CITIES_REQUIRED
+              ? 'Cannot delete the last city'
+              : `Delete ${city.name}`
+          "
+          :title="
+            props.cities.length <= MIN_CITIES_REQUIRED ? 'Cannot delete the last city' : 'Delete'
+          "
         >
           <XMarkIcon class="icon" aria-hidden="true" />
         </button>
@@ -68,9 +67,9 @@
             @keydown.up.prevent="navigateSuggestions(-1)"
             @keydown.escape="handleEscape"
           />
-          <ul 
+          <ul
             id="city-suggestions"
-            v-if="showSuggestions && (citySuggestions.length > 0 || searching)" 
+            v-if="showSuggestions && (citySuggestions.length > 0 || searching)"
             class="suggestions-list"
             role="listbox"
             aria-label="City suggestions"
@@ -88,13 +87,14 @@
                 :class="{ active: selectedIndex === index }"
                 @mousedown="selectCity(suggestion)"
               >
-                {{ suggestion.name }}{{ suggestion.state ? `, ${suggestion.state}` : '' }}, {{ suggestion.country }}
+                {{ suggestion.name }}{{ suggestion.state ? `, ${suggestion.state}` : '' }},
+                {{ suggestion.country }}
               </li>
             </template>
           </ul>
         </div>
-        <button 
-          class="add-button" 
+        <button
+          class="add-button"
           @click="addCity"
           :disabled="!canAddCity"
           :aria-label="canAddCity ? 'Add city' : 'Add city, input is empty'"
@@ -109,7 +109,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
-import { ArrowLeftIcon, Bars3Icon, XMarkIcon, PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
+import {
+  ArrowLeftIcon,
+  Bars3Icon,
+  XMarkIcon,
+  PlusIcon,
+  ArrowPathIcon,
+} from '@heroicons/vue/24/outline';
 import { searchCities } from '../api/weather/weatherApi';
 import { CitySearchResult } from '../api/weather/types';
 import { City } from '../types/city';
@@ -198,7 +204,7 @@ const handleEnter = () => {
 
 const navigateSuggestions = (direction: number) => {
   if (citySuggestions.value.length === 0) return;
-  
+
   selectedIndex.value += direction;
   if (selectedIndex.value < 0) {
     selectedIndex.value = citySuggestions.value.length - 1;
@@ -447,7 +453,9 @@ onUnmounted(() => {
         @include button-base($button-lg);
         border-radius: $radius-lg;
         flex-shrink: 0;
-        transition: background-color $transition-fast, opacity $transition-fast;
+        transition:
+          background-color $transition-fast,
+          opacity $transition-fast;
 
         .icon {
           @include icon($icon-lg);
@@ -466,4 +474,3 @@ onUnmounted(() => {
   }
 }
 </style>
-

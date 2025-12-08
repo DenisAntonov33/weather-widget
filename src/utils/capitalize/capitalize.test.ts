@@ -80,4 +80,3 @@ describe('capitalize', () => {
     expect(capitalize('few clouds')).toBe('Few Clouds');
   });
 });
-

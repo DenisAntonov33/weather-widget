@@ -3,11 +3,8 @@
     <button v-if="!showSettings" class="settings-button" @click="toggleSettings">
       <Cog6ToothIcon class="icon" />
     </button>
-    
-    <div 
-      ref="contentWrapper" 
-      class="content-wrapper"
-    >
+
+    <div ref="contentWrapper" class="content-wrapper">
       <Settings
         v-show="showSettings"
         :cities="cities"
@@ -16,13 +13,9 @@
         @remove-city="handleRemoveCity"
         @reorder-cities="handleReorderCities"
       />
-      
+
       <div v-show="!showSettings" ref="weatherViewRef" class="weather-view">
-        <CityWeather
-          v-for="city in cities"
-          :key="city.id"
-          :city-name="city.name"
-        />
+        <CityWeather v-for="city in cities" :key="city.id" :city-name="city.name" />
       </div>
     </div>
   </div>
@@ -45,7 +38,7 @@ const STORAGE_KEY = 'weather-widget-cities';
 
 const DEFAULT_CITIES: City[] = [
   { id: '1', name: 'London', country: 'UK' },
-  { id: '2', name: 'Moscow', country: 'RU' }
+  { id: '2', name: 'Moscow', country: 'RU' },
 ];
 
 const loadCities = async () => {
@@ -57,13 +50,13 @@ const loadCities = async () => {
         cities.value = parsed;
         return;
       }
-    } catch (e) {
+    } catch {
       console.warn('Failed to parse stored cities, using defaults');
     }
   }
   // If no stored cities, try to get user's location first
   await requestUserLocation();
-  
+
   // If no user location was added, use default cities
   if (cities.value.length === 0) {
     cities.value = [...DEFAULT_CITIES];
@@ -77,28 +70,28 @@ const requestUserLocation = async () => {
     return;
   }
 
-  return new Promise<void>((resolve) => {
+  return new Promise<void>(resolve => {
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      async position => {
         try {
           const { fetchWeatherByCoords } = await import('./api/weather/weatherApi');
           const weather = await fetchWeatherByCoords(
             position.coords.latitude,
             position.coords.longitude
           );
-          
+
           // Add user's location as the first city
           const userCity: City = {
             id: 'user-location',
             name: weather.location,
-            country: weather.country
+            country: weather.country,
           };
-          
+
           // Check if city already exists
           const exists = cities.value.some(
             c => c.name.toLowerCase() === userCity.name.toLowerCase()
           );
-          
+
           if (!exists) {
             cities.value.unshift(userCity); // Add at the beginning
             saveCities();
@@ -109,14 +102,14 @@ const requestUserLocation = async () => {
           resolve();
         }
       },
-      (error) => {
+      error => {
         // User denied permission or geolocation failed
         console.warn('Geolocation error:', error.message);
         resolve();
       },
       {
         timeout: 10000,
-        enableHighAccuracy: false
+        enableHighAccuracy: false,
       }
     );
   });
@@ -143,15 +136,15 @@ const handleAddCity = async (cityName: string) => {
       const { fetchWeather } = await import('./api/weather/weatherApi');
       const weather = await fetchWeather(trimmedName);
       country = weather.country;
-    } catch (e) {
+    } catch {
       // If API call fails, add city without country
       console.warn('Could not fetch country for city:', trimmedName);
     }
-    
+
     const newCity: City = {
       id: Date.now().toString(),
       name: trimmedName,
-      country: country
+      country: country,
     };
     cities.value.push(newCity);
     saveCities();
@@ -176,7 +169,6 @@ const handleReorderCities = (fromIndex: number, toIndex: number) => {
 onMounted(() => {
   loadCities();
 });
-
 </script>
 
 <style lang="scss">
@@ -184,7 +176,8 @@ onMounted(() => {
 @use './styles/mixins' as *;
 
 .weather-widget {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
   border-radius: $radius-xl;
   padding: $spacing-2xl;
